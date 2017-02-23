@@ -1,0 +1,55 @@
+# qzz/fekit/grunt
+/dev/
+/prd/
+/refs/
+/.ver/
+/.build/
+/build/
+
+/node_modules/
+#sync.json
+
+log.txt
+
+gulpfile.js
+.tern-project
+
+# kdiff3 ignore
+*.orig
+.tern-project
+
+#sketch
+*.sketch
+# maven ignore
+target/
+
+# eclipse ignore
+.settings/
+.project
+.classpath
+
+# idea ignore
+.idea/
+*.ipr
+*.iml
+*.iws
+
+# temp ignore
+*.log
+*.cache
+*.diff
+*.patch
+*.tmp
+
+# system ignore
+.DS_Store
+Thumbs.db
+#sass ignore
+.sass-cache
+
+# package ignore (optional)
+# *.jar
+# *.war
+# *.zip
+# *.tar
+# *.tar.gz
