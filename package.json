@@ -9,6 +9,13 @@
    "bin": {
     "emi": "./bin/cli.js"
   },
+"repository": {
+    "type": "git",
+    "url": "https://github.com/imvvk/emi-cli.git"
+  },
+  "bugs": {
+    "url": "https://github.com/imvvk/emi-cli/issues"
+  },
   "keywords": [
     "web",
     "fe",
