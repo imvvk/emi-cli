@@ -79,6 +79,7 @@ program
     });
 
 if(process.argv.length == 2){
+    showVersion();
     showHelp();
 }
 
@@ -86,6 +87,12 @@ program.on('--help', function(){
     showHelp();
 });
 
+function showVersion(){
+    var version = package.version.magenta;
+    console.log("");
+    console.log("emi version :  " + version);
+    console.log("");
+}
 
 function showHelp() {
     console.log('  Examples:');

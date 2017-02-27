@@ -44,12 +44,14 @@ module.exports = {
     }, 
     server : { 
         exec : function (port) {
+            log.info ("__emi__ work in path", __emi__.cwd);
             server.start(port);
         }
     },
 
     pack : {
         exec: function(isMin, isDll) {
+            log.info ("__emi__ work in path", __emi__.cwd);
             pack(isMin, isDll); 
         }
     },

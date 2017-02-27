@@ -30,7 +30,6 @@ var __emi__ = {
     fs : fs
 }
 
-log.info ("__emi__ start in path", __emi__.cwd);
 
 global.log = log;
 global.program = program;

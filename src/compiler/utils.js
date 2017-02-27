@@ -11,7 +11,6 @@ var ExtractTextPlugin = require("extract-text-webpack-plugin");
 var HtmlWebpackIncludeAssetsPlugin = require('html-webpack-include-assets-plugin');
 var CopyWebpackPlugin = require('copy-webpack-plugin')
 var OptimizeCSSPlugin = require('optimize-css-assets-webpack-plugin')
-var ChunkManifestPlugin = require('chunk-manifest-webpack-plugin');
 var ManifestPlugin = require('webpack-manifest-plugin');
  
 
