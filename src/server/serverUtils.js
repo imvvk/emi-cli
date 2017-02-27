@@ -7,17 +7,16 @@ var hotWebpackMiddleware = require('webpack-hot-middleware')
 var complier = require("../compiler/compiler.js");
 var complierUtils = require("../compiler/utils.js");
 
-
-function _addMiddleware(app, compiler, config, basedir ) {
+function _addMiddleware(app, compiler, config, basedir) {
     var devMw = webpackDevMiddleware(compiler, {
-        publicPath : config.publicPath || "/",
-        quite : true
+        publicPath : complierUtils.pulicPath(config.pathMap, "dev"),
+        noInfo : program.quite,
+        stats: {
+            colors: true
+        },
+        quite : program.quite
     });
-    var hotMw = hotWebpackMiddleware(compiler, {
-        log : function () {
-        
-        } 
-    });
+    var hotMw = hotWebpackMiddleware(compiler);
         
     //inject mean use html webpack plugin
     if (config.htmlMode === "inject") {
@@ -32,14 +31,21 @@ function _addMiddleware(app, compiler, config, basedir ) {
 
     app.use(devMw);
     app.use(hotMw);
+
+    //hot-update
+    /**
+    app.get(/[\w\d]+\.hot\-update\.json([\#\?].*)?$/, function(req, res, next){
+        next();
+        //server.sendFile(req, path.join(__emi__.cwd, req.url))
+    });
+     ***/
 }
 
 
 module.exports = {
 
     addWebpackMiddleware : function (app, basedir, config) {
-        
-        return complier.create(basedir, config, "dev").then(function (result) {
+        return complier.create(basedir, config, "dev", true).then(function (result) {
 
             var dllCompiler = result.dllCompiler,
                 compiler = result.compiler; 
@@ -52,7 +58,7 @@ module.exports = {
                     }
                     complierUtils.logStats(stats);
 
-                    complier.run(function (err, stats){
+                    compiler.run(function (err, stats){
                         if (err) {
                             log.error(err);
                             return;
@@ -63,14 +69,6 @@ module.exports = {
             }
 
             _addMiddleware(app, compiler, config, basedir);
-
-            compiler.run(function (err, stats) {
-                if (err) {
-                    throw err; 
-                } 
-                complierUtils.logStats(stats);
-            });
-
         })
     },
 
@@ -91,8 +89,10 @@ module.exports = {
     addStaticMiddleware : function (app, basedir, config) {
         if (config.staticPath) {
             var staticPath = path.join(basedir, config.staticPath);
-            console.log("staticPath===",staticPath);
-            app.use(staticPath, express.static(config.staticPath))
+            log.debug("staticPath===",staticPath);
+            var urlpath = config.staticPath.match(/^\//) ? config.staticPath : "/"+config.staticPath;
+            
+            app.use(urlpath, express.static(staticPath))
         }
     }
 

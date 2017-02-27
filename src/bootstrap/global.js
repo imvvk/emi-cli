@@ -4,11 +4,13 @@
  */
 var path = require("path");
 var os = require('os');
-var fs = require('fs');
+var fs = require('fs-extra');
 var program = require('commander');
 var child_process = require("child_process");
 
+
 var log = require('../helpers/log');
+
 
 
 var __emi__ = {
@@ -25,13 +27,14 @@ var __emi__ = {
      */
     cwd: process.cwd(),
 
-    fs : require("fs")
-};
+    fs : fs
+}
 
-log.info ("root", __emi__.root);
+log.info ("__emi__ start in path", __emi__.cwd);
 
 global.log = log;
 global.program = program;
 global.__emi__ = __emi__;
+global.emiUtils = require("./globalUtils.js");
 
 module.exports = __emi__;

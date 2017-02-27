@@ -89,7 +89,7 @@ module.exports = {
         }
 
         if(!grep || message.indexOf(grep) !== -1 || grep === group){
-            console.log(timeStr + ' ' + iconMap[group || 'success'].bold[groupColor] + ' ' + message);
+            console.log(timeStr + ' ' + iconMap[group || 'success'].bold[groupColor] + ' ' + message[groupColor]);
         }
     }
 };

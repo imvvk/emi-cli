@@ -15,6 +15,9 @@ var complier = require("../compiler/compiler.js");
 // 中间件
 var favicon = require('./middlewares/favicon');
 var source = require('./middlewares/source');
+var preHandler = require('./middlewares/preHandler');
+
+var fileExplorer = require("../helpers/fileExplorer.js"); 
 
 var serverUtils = require("./serverUtils.js");
 
@@ -32,14 +35,21 @@ Server.prototype = {
         app.use('/__source__/', source.bind(this));
         app.get('*/favicon.ico', favicon.bind(this));
 
+        app.use(preHandler);
+
         var pc = config.getProject();
 
         // serverUtils.addProxyMiddleware(app, __emi__.cwd, pc.config);
         // handle fallback for HTML5 history API
-        app.use(require('connect-history-api-fallback')())
- 
+        if (pc.config.historyApi) {
+            app.use(require('connect-history-api-fallback')())
+        }
+
         return serverUtils.addWebpackMiddleware(app, __emi__.cwd, pc.config).then(function () {
-            serverUtils.addStaticMiddleware(app,  __emi__.cwd,pc.config);
+
+            serverUtils.addStaticMiddleware(app,  __emi__.cwd, pc.config);
+            app.use(me.fileExplor.bind(me));
+
             me.server = require('http').createServer(app).listen(port);
             if(program.https){
 
@@ -66,7 +76,6 @@ Server.prototype = {
             }
 
             self.close();
-
             reject(err);
         }
 
@@ -99,11 +108,13 @@ Server.prototype = {
         process.on("SIGINT", function(){
             console.log('\b\b  ');
             console.log('Bye Bye.'.bold.yellow);
+            self.close();
             process.exit()
         });
 
         process.on('SIGTERM', function(){
             console.log('Bye Bye.'.bold.yellow);
+            self.close();
             process.exit()
         });
     },
@@ -123,7 +134,26 @@ Server.prototype = {
      * @param env
      */
     sendFile: function(req, filePath){
-        filePath = filePath || path.join(__hii__.cwd, req.url);
+        filePath = filePath || path.join(__emi__.cwd, req.url);
+
+        logger.debug('send file: ' + filePath.bold);
+
+        var res = req.res;
+
+        res.set('Access-Control-Allow-Origin', '*');
+
+        res.sendFile(filePath, function(err){
+            if(err){
+                res.statusCode = 404;
+                res.end('404 Not Found');
+                logger.error(err);
+            }
+            logger.access(req);
+        });
+    },
+    sendFile: function(req, filePath){
+
+        filePath = filePath || path.join(__emi__.cwd, req.url);
 
         logger.debug('send file: ' + filePath.bold);
 
@@ -141,44 +171,49 @@ Server.prototype = {
         });
     },
 
-    getProjectInfoFromURL: function(url){
-        //  url,  projectName,    env,    folder, fileName, version, fileExt,     paramsAndHash
-        var reg = /\/(.*?)\/(src|prd|loc|dev)(\/.*)?\/(.*?)(@\w+)?(?:\.(\w+))([\#\?].*)?$/;
-        var result = url.match(reg);
+    fileExplor : function(req, res, next) {
+        var url = req.url;
+        var filePath = __emi__.cwd + url;
 
-        if(result){
-            return {
-                projectName: result[1],
-                env: result[2],
-                folder: result[3],
-                fileName: result[4],
-                version: result[5],
-                fileExt: result[6],
-                paramsAndHash: result[7]
+        try{
+            var stat = fs.statSync(filePath);
+            if(stat.isDirectory()){
+                // 如果目录没有以`/`结尾
+                if(!/\/$/.test(url)){
+                    res.redirect(url + '/');
+                    return
+                }
+
+                fileExplorer.renderList(url, filePath)
+                    .then(function(html){
+                        res.setHeader('Content-Type', 'text/html');
+                        res.end(html);
+                        logger.access(req);
+                    });
+            }else{
+                this.sendFile(req)
             }
-        }else{
-            return null
+        }catch(e){
+            res.statusCode = 404;
+            res.end('404 Not Found');
+
+            logger.error(e);
+            logger.access(req);
         }
-    },
-
-    sendCompiledFile: function(req, projInfo){
-        var filePath = path.join(__hii__.codeTmpdir, req.url);
-
-        filePath = filePath.replace(/@[\w+]+\.(js|css)/, '.$1').replace(/[\\\/]prd[\\\/]/, '/loc/');
-        this.sendFile(req, filePath);
     }
+
 }
 
 
-module.exports = function start () {
+module.exports.start = function start (port) {
 
     var mmfs = require("memory-fs");
     __emi__.fs = new mmfs();
-    var server = new Server(9900);
+    var server = new Server(port);
     server.start().then(function (server) {
-        console.log("server start");
+        log.info(("server start:"+ server.url).green);
     }).catch(function (err) {
-        console.error("server error", err);
+        log.error("server error:", err);
     }); 
 
 }

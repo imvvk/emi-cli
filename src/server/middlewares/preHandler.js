@@ -4,6 +4,7 @@
  */
 
 'use strict';
+var path = require("path");
 
 module.exports = function(req, res, next){
     req.url = req.url.replace(/[\?\#].*$/, '');

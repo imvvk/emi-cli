@@ -3,6 +3,7 @@
 * @author imvvk
 */
 
+var _ = require("lodash");
 var fs = require("fs");
 var path = require("path");
 
@@ -16,7 +17,11 @@ module.exports = {
             loaded = true;
             loadConfig(); 
         }
-        console.log(PROJECTS_CONFIG);
+        if (_.isEmpty(PROJECTS_CONFIG))  {
+            log.error("cant not load emi.config.js in current path, path is", __emi__.cwd);
+            return false;
+        }
+        return true;
     },
     isWorkspace : function () {
         return PROJECTS_CONFIG.__isWorkspace;
@@ -63,12 +68,14 @@ function loadConfig() {
                 prefixPathRegs.push(new RegExp("^/("+key+")/"));
             });
 
-            console.log("regx=", prefixPathRegs);
         } else {
             PROJECTS_CONFIG.__isWorkspace = false;
             PROJECTS_CONFIG.__default = _resolve(config);
         }
+        return true;
     }
+
+    return false; 
 
     function _load(p) {
         var content, config;
