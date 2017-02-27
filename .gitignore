@@ -11,7 +11,7 @@
 
 
 .tern-project
-.DS_Store
+*.DS_Store
 
 # kdiff3 ignore
 *.orig
