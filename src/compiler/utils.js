@@ -461,17 +461,19 @@ function _cssLoader (options, env) {
         var _opts ;
         if (loader === "postcss") {
             _opts = loaderOptions || {
-                plugins : [
-                    require("autoprefixer")({
-                        browsers: ['last 2 versions']
-                    })
-                ]
+                plugins : function () {
+                    return [
+                        require("autoprefixer")
+                    ]
+                }
             };
         } else {
             _opts = Object.assign({}, loaderOptions, {
                 sourceMap: options.sourceMap
             });
         }
+      
+
         return {
             loader: loader + '-loader',
             options: _opts

@@ -28,12 +28,25 @@ module.exports = {
         }
     ],
     historyApi : true, //开启HTML5 historyAPI  server 使用 所有的访问都到index.html 下
-
+    cssLoader : {
+        extra : true,
+        vue : true  
+    },
+    /**
+     * css Loader 生成器 
+    cssLoader : {
+        sass : {},
+        postcss : {},
+        extra : true,
+        vue : true  
+    },
+    **/
     //staticPath : 'static',//不需要转化的静态资源文件 
   
     //路径配置 
     //assetsPath 会增加到 filename 的前面生成物理路径
     //publicPath 同 output 的 publicPath 虚拟路径 
+    
     
     pathMap : {
         dev : {
@@ -69,14 +82,12 @@ module.exports = {
                     loaders : emiUtils.cssLoader(
                         {
                          extract:true,
-                         sourceMap:true, 
-                         postcss : [
-                            require('autoprefixer')({
-                                browsers: ['last 2 versions']
-                            }) 
+                        }),
+
+                    postcss : [
+                            require('autoprefixer')() 
                          ]
-                    })
-                }
+                    }
             },
             {
                 test: /\.js$/,
