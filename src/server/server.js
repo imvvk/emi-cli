@@ -74,7 +74,6 @@ Server.prototype = {
             }else{
                 console.log(err.message);
             }
-
             self.close();
             reject(err);
         }

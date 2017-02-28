@@ -298,13 +298,15 @@ function _mergeResolveLoaders(resolveLoaders, basedir, config, env) {
 
 function _mergeResolve(resolve, basedir, config, env) {
     var modules = resolve.modules || [];
-    var cmd_nodepath = path.join(__emi__.root, "node_modules");
-    var pro_nodepath = path.join(basedir, "node_modules");
-    modules.splice(0,0, cmd_nodepath);
-    if (~modules.indexOf(pro_nodepath)) {
-        modules.splice(0,0, pro_nodepath);
+    if (modules.length) {
+        var cmd_nodepath = path.join(__emi__.root, "node_modules");
+        var pro_nodepath = path.join(basedir, "node_modules");
+        modules.splice(0,0, cmd_nodepath);
+        if (!~modules.indexOf(pro_nodepath)) {
+            modules.splice(0,0, pro_nodepath);
+        }
+        resolve.modules = modules;
     }
-    resolve.modules = modules;
 }
 
 
