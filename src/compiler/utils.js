@@ -457,15 +457,33 @@ function _cssLoader (options, env) {
     }
     var fallback_loader = options.vue ? "vue-style-loader" : "style-loader";
     // generate loader string to be used with extract text plugin
+    function mergeOpts(loader, loaderOptions) {
+        var _opts ;
+        if (loader === "postcss") {
+            _opts = loaderOptions || {
+                plugins : [
+                    require("autoprefixer")({
+                        browsers: ['last 2 versions']
+                    })
+                ]
+            };
+        } else {
+            _opts = Object.assign({}, loaderOptions, {
+                sourceMap: options.sourceMap
+            });
+        }
+        return {
+            loader: loader + '-loader',
+            options: _opts
+        }
+    }
     function generateLoaders (loader, loaderOptions) {
         var loaders = [cssLoader]
+        if (loader !== "postcss") {
+            loaders.push(mergeOpts("postcss",  options.postcss));
+        }
         if (loader) {
-            loaders.push({
-                loader: loader + '-loader',
-                options: Object.assign({}, loaderOptions, {
-                    sourceMap: options.sourceMap
-                })
-            })
+            loaders.push(mergeOpts(loader, loaderOptions));
         }
         // Extract CSS when that option is specified
         // (which is the case during production build)
@@ -482,7 +500,7 @@ function _cssLoader (options, env) {
     // http://vuejs.github.io/vue-loader/en/configurations/extract-css.html
     return {
         css: generateLoaders(),
-        postcss: generateLoaders("postcss", options.postcss || []),
+        postcss: generateLoaders("postcss", options.postcss),
         less: generateLoaders('less'),
         sass: generateLoaders('sass', Object.assign({ indentedSyntax: true }, options.sass)),
         scss: generateLoaders('sass', Object.assign({}, options.sass)),
