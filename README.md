@@ -152,5 +152,9 @@ module.exports = {
 
 ```
 
+#### todos:
 
+- http proxy
+- https support …
+- ………..
 
