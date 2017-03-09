@@ -52,6 +52,10 @@ module.exports = {
     },
 
     htmlMode : "inject",
+    //proxy same as vue-cli
+    proxyTable : {
+    
+    },
 
     entryHtml : [
         {

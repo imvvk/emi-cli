@@ -3,6 +3,8 @@ var path = require("path");
 var express = require("express");
 var webpackDevMiddleware = require('webpack-dev-middleware')
 var hotWebpackMiddleware = require('webpack-hot-middleware')
+var proxyMiddleware = require('http-proxy-middleware');
+
 
 var complier = require("../compiler/compiler.js");
 var complierUtils = require("../compiler/utils.js");
@@ -74,8 +76,8 @@ module.exports = {
 
     addProxyMiddleware : function (app, basedir, config) {
         // proxy api requests
-        if (config.proxy) {
-            var proxyTable = config.proxy;
+        if (config.proxyTable) {
+            var proxyTable = config.proxyTable;
             Object.keys(proxyTable).forEach(function (context) {
                 var options = proxyTable[context]
                 if (typeof options === 'string') {

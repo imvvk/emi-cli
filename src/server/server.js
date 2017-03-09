@@ -48,6 +48,7 @@ Server.prototype = {
         return serverUtils.addWebpackMiddleware(app, __emi__.cwd, pc.config).then(function () {
 
             serverUtils.addStaticMiddleware(app,  __emi__.cwd, pc.config);
+            serverUtils.addProxyMiddleware(app, __emi__.cwd, pc.config);
             app.use(me.fileExplor.bind(me));
 
             me.server = require('http').createServer(app).listen(port);
