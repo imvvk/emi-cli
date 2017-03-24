@@ -239,7 +239,7 @@ function prd(basedir, config){
     }
 
     plugins.push(new ManifestPlugin());
-    plugins.push(new OptimizeCSSPlugin());
+    plugins.push(new OptimizeCSSPlugin(config.optimizeCss || {}));
     plugins.push(new FriendlyErrorsPlugin());
     return wpconf;
 }

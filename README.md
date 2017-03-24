@@ -71,6 +71,15 @@ module.exports = {
         vue : true  
     },
     /**
+     * optimizeCss : {
+        cssProcessorOptions: {
+            discardComments: {removeAll: true},
+            //避免cssnano 重新计算z-index, 引用外部CSS场景使用
+            safe: true
+        }
+    },
+     **/
+    /**
      * css Loader 生成器 
     cssLoader : {
         sass : {},
