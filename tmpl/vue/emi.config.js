@@ -27,9 +27,10 @@ module.exports = {
             chunks : ["main"]
         }
     ],
-    historyApi : true, //开启HTML5 historyAPI  server 使用 所有的访问都到index.html 下
+    //historyApi : true, //开启HTML5 historyAPI  server 使用 所有的访问都到index.html 下
     cssLoader : {
         extra : true,
+        //happypack : true  default true
         vue : true  
     },
     /**
@@ -50,11 +51,11 @@ module.exports = {
     
     pathMap : {
         dev : {
-            assetsPath : "static",  
+            prefixPath : "static",  //路径前缀 
             publicPath : "",
         },
         prd : {
-            assetsPath : "static",
+            prefixPath : "static",
             publicPath : ""
         }
     },
@@ -81,7 +82,7 @@ module.exports = {
                 options : { 
                     loaders : emiUtils.cssLoader(
                         {
-                         extract:true,
+                         extract:true
                         }),
 
                     postcss : [

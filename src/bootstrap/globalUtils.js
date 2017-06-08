@@ -4,7 +4,7 @@
  ***/
 
 var compilerUtils = require("../compiler/utils.js");
-
+var Project = require("../compiler/webpack/project.js");
 var Utils = {
     
     filename : function (ext) {
@@ -21,7 +21,8 @@ var Utils = {
         }
     },
     cssLoader : function (options)  {
-        return compilerUtils.cssLoader(options, __emi__.env);
+        return Project.cssLoader(options, __emi__.env); 
+        //return compilerUtils.cssLoader(options, __emi__.env);
     },
 
     assetPath : function (filname) {

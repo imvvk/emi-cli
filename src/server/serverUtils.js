@@ -6,71 +6,55 @@ var hotWebpackMiddleware = require('webpack-hot-middleware')
 var proxyMiddleware = require('http-proxy-middleware');
 
 
-var complier = require("../compiler/compiler.js");
+var compiler = require("../compiler/compiler.js");
 var complierUtils = require("../compiler/utils.js");
-
-function _addMiddleware(app, compiler, config, basedir) {
-    var devMw = webpackDevMiddleware(compiler, {
-        publicPath : complierUtils.pulicPath(config.pathMap, "dev"),
-        noInfo : program.quite,
-        stats: {
-            colors: true
-        },
-        quite : program.quite
-    });
-    var hotMw = hotWebpackMiddleware(compiler);
-        
-    //inject mean use html webpack plugin
-    if (config.htmlMode === "inject") {
-        // force page reload when html-webpack-plugin template changes
-        compiler.plugin('compilation', function (compilation) {
-            compilation.plugin('html-webpack-plugin-after-emit', function (data, cb) {
-                hotMw.publish({ action: 'reload' })
-                cb()
-            })
-        })
-    }
-
-    app.use(devMw);
-    app.use(hotMw);
-
-    //hot-update
-    /**
-    app.get(/[\w\d]+\.hot\-update\.json([\#\?].*)?$/, function(req, res, next){
-        next();
-        //server.sendFile(req, path.join(__emi__.cwd, req.url))
-    });
-     ***/
-}
 
 
 module.exports = {
 
     addWebpackMiddleware : function (app, basedir, config) {
-        return complier.create(basedir, config, "dev", true).then(function (result) {
+        return compiler.compileInServer(config, basedir, "dev").then(function (data) {
+            if (data.dll)  {
+                data.dll.watch({}, function(err, stats) {
+                    process.stdout.write(stats.toString({
+                        colors: true,
+                        modules: false,
+                        children: false,
+                        chunks: false,
+                        chunkModules: false
+                    }) + '\n\n');
+                }); 
 
-            var dllCompiler = result.dllCompiler,
-                compiler = result.compiler; 
+            } 
+            initMw(data);
             
-            if (config.dllWatch) {
-                dllCompiler.watch({}, function (err, stats) {
-                    if (err) {
-                        log.error(err);
-                        return;
-                    }
-                    complierUtils.logStats(stats);
+            function initMw(data) {
+                var compiler = data.webpack;
+                var devMw = webpackDevMiddleware(compiler, {
+                    publicPath : data.webpackConfig.output.publicPath || "",
+                    noInfo : program.quite,
+                    stats: {
+                        colors: true
+                    },
+                    quite : program.quite
+                });
+                var hotMw = hotWebpackMiddleware(compiler);
 
-                    compiler.run(function (err, stats){
-                        if (err) {
-                            log.error(err);
-                            return;
-                        }
-                        complierUtils.logStats(stats);
-                    });
-                })
+
+                //inject mean use html webpack plugin
+                if (config.htmlMode === "inject") {
+                    // force page reload when html-webpack-plugin template changes
+                    compiler.plugin('compilation', function (compilation) {
+                        compilation.plugin('html-webpack-plugin-after-emit', function (data, cb) {
+                            hotMw.publish({ action: 'reload' })
+                            cb()
+                        })
+                    })
+                }
+
+                app.use(devMw);
+                app.use(hotMw);
             }
-
-            _addMiddleware(app, compiler, config, basedir);
         })
     },
 
@@ -93,7 +77,6 @@ module.exports = {
             var staticPath = path.join(basedir, config.staticPath);
             log.debug("staticPath===",staticPath);
             var urlpath = config.staticPath.match(/^\//) ? config.staticPath : "/"+config.staticPath;
-            
             app.use(urlpath, express.static(staticPath))
         }
     }

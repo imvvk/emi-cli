@@ -18,8 +18,7 @@ var source = require('./middlewares/source');
 var preHandler = require('./middlewares/preHandler');
 
 var fileExplorer = require("../helpers/fileExplorer.js"); 
-
-var serverUtils = require("./serverUtils.js");
+var serverUtils =  require("./serverUtils.js");
 
 var Server = function (port) {
     this.app = express();
@@ -38,26 +37,16 @@ Server.prototype = {
         app.use(preHandler);
 
         var pc = config.getProject();
-
-        // serverUtils.addProxyMiddleware(app, __emi__.cwd, pc.config);
-        // handle fallback for HTML5 history API
-        if (pc.config.historyApi) {
-            app.use(require('connect-history-api-fallback')())
-        }
-
         return serverUtils.addWebpackMiddleware(app, __emi__.cwd, pc.config).then(function () {
-
             serverUtils.addStaticMiddleware(app,  __emi__.cwd, pc.config);
             serverUtils.addProxyMiddleware(app, __emi__.cwd, pc.config);
             app.use(me.fileExplor.bind(me));
-
-            me.server = require('http').createServer(app).listen(port);
-            if(program.https){
-
+            if (pc.config.historyApi) {
+                app.use(require('connect-history-api-fallback')())
             }
+            me.server = require('http').createServer(app).listen(port);
             return new Promise(me.initEvents.bind(me));
         });
-            
     },
 
     initEvents: function(resolve, reject){
@@ -73,7 +62,7 @@ Server.prototype = {
             }else if(err.code === 'EACCES'){
                 console.log('\nPermission denied.\nPlease try running this command again as root/Administrator.\n');
             }else{
-                console.log(err.message);
+                console.log(err);
             }
             self.close();
             reject(err);

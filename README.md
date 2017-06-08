@@ -28,8 +28,6 @@ build local project  minify   production context
 
 
 
-
-
 ```
 
 
@@ -97,11 +95,11 @@ module.exports = {
     
     pathMap : {
         dev : {
-            assetsPath : "static",  
+            prefixPath : "static",  
             publicPath : "",
         },
         prd : {
-            assetsPath : "static",
+            prefixPath : "static",
             publicPath : ""
         }
     },
@@ -162,8 +160,15 @@ module.exports = {
     }
 
 }
-
 ```
+
+
+
+#### ChangeLogs
+
+v0.20 add happypack webpack-parallel-uglify  support  
+
+
 
 #### todos:
 

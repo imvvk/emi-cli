@@ -12,6 +12,10 @@ var HtmlWebpackIncludeAssetsPlugin = require('html-webpack-include-assets-plugin
 var CopyWebpackPlugin = require('copy-webpack-plugin')
 var OptimizeCSSPlugin = require('optimize-css-assets-webpack-plugin')
 var ManifestPlugin = require('webpack-manifest-plugin');
+var HappyPack = require('happypack');
+var os = require("os");
+var happyThreadPool = HappyPack.ThreadPool({ size: os.cpus().length });
+
  
 
 
@@ -55,8 +59,9 @@ module.exports = {
         program.detail && console.log(webpackConfig);
         return webpackConfig;
     },
-    logStats : function (stats, showWarn) {
+    logStats : function (stats, showWarn, options) {
         var info;
+        log.info(stats.toString(options.stats || "normal"));
         if (showWarn && stats.hasWarnings()) {
             info = stats.toJson();
             info.warnings.forEach(function (warn) {
@@ -397,6 +402,7 @@ function _dllInfoTofile(options) {
             var fp = path.join(options.path, "./dll/files.json");
             fs.writeFileSync(fp, JSON.stringify(dll_files_info));
             log.debug("write dll files info to :", fp);
+            console.log("dll info====", new Date().getTime());
             callback();
         });
     }
