@@ -296,7 +296,9 @@ class ProjectFactory  extends ConfigFactory {
             })),
             copyStatic();    
             plugins.push(new ManifestPlugin());
-            plugins.push(new OptimizeCSSPlugin(emiConfig.optimizeCss || {}));
+            if (emiConfig.optimizeCss) {
+                plugins.push(new OptimizeCSSPlugin(emiConfig.optimizeCss));
+            }
             plugins.push(new FriendlyErrorsPlugin());
         }
         function copyStatic() {

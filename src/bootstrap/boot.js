@@ -27,21 +27,27 @@ program
 
 
 program
-    .command('init <project-name> [template-name]')
+    .command('init <template-name> [project-name] ')
     .description('generate a new project from a template')
-    .action(function(name, template){
+    .action(function(template, name){
         if (!template) {
-            template = "normal";
+            log.error("template must be set , it can be 'vue|vue1|react|react-redux|normal|empty' or a git path ");
+            return 
         }
         if (template.match(/^(vue|vue1|react|react-redux|normal|empty)$/)) {
             command.init.exec(template, name);
-        } else {
-            log.error("template-name not exist, it must be vue|vue1|react|react-redux|normal|empty");
+        } else  {
+            command.initGit.exec(template, name);
         }
 
     });
 
-
+program
+    .command('set [name] <value>')
+    .description('set .emirc name value')
+    .action(function(name, value){
+        command.config.exec.apply(this, [name, value]);
+    });
 
 program
     .command('start')
@@ -97,7 +103,7 @@ function showVersion(){
 function showHelp() {
     console.log('  Examples:');
     console.log('');
-    console.log('    $ emi init project_name <template-name>');
+    console.log('    $ emi init <template-name> project_name');
     console.log('    $ emi start');
     console.log('    $ emi start -p 9900');
     console.log('    $ emi pack');

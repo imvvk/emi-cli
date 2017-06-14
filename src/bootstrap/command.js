@@ -5,6 +5,8 @@ var fs = require("fs");
 var fse = require("fs-extra");
 var path = require("path");
 var inquirer = require('inquirer');
+var download = require("../helpers/download.js");
+var envConfig = require("../helpers/config.js");
 
 module.exports = {
     init : {
@@ -17,6 +19,7 @@ module.exports = {
                 if (err) {
                     fse.mkdirsSync(project_path);
                     fse.copySync(template_path, project_path); 
+                    download.replaceProjectName(project_path, projectName);
                     log.info("copy template [" +template+ "] to project " +  projectName +  " end !");
                 } else {
                     var files = fs.readdirSync(project_path);
@@ -27,6 +30,7 @@ module.exports = {
                         inquirer.prompt([{ type :"confirm", "name" : "user_input", message : "project path not empty,  continue ?"}]).then(function (answers) {
                             if (answers.user_input) {
                                 fse.copySync(template_path, project_path); 
+                                download.replaceProjectName(project_path, projectName);
                                 log.info("copy template [" +template+ "] to project " +  projectName +  " end !");
                             } else {
                                 log.info("user cancel");
@@ -42,6 +46,55 @@ module.exports = {
         
         }
     }, 
+    initGit :{
+        exec :  function (template, projectName) {
+            var emirc_path = path.resolve(process.env.HOME || process.env.USERPROFILE, '.emi_cache');
+            var regx = /^git@|https?:\/\//;
+            var gitpath ;
+            if (template.match(regx))  {
+                gitpath = template;
+            } else{
+                var prefix =envConfig.get("git");
+                if (prefix.match(/^http/) && !prefix.match(/\/$/) && !template.match(/^\//)) {
+                    template = "/"  + template;
+                } 
+                gitpath = envConfig.get("git") + template;    
+            }
+            if (!gitpath.match(/\.git$/)) {
+                gitpath +=".git";
+            }
+            log.info("git url is:" + gitpath);
+            var project_path = path.join(__emi__.cwd, projectName);
+            var tmp_path = path.join(emirc_path, projectName+"_"+ new Date().getTime());
+            if (fs.existsSync(emirc_path)) {
+                download.gitclone(gitpath, tmp_path, function () {
+                    download.replaceProjectName(tmp_path, projectName);
+
+                    var files = fs.readdirSync(project_path);
+                    if (!files.length) {
+                        fse.copySync(tmp_path, project_path);
+                        fse.remove(tmp_path);
+                        log.info("create project " +  projectName +  " end !");
+                    } else {
+                        inquirer.prompt([{ type :"confirm", "name" : "user_input", message : "project path not empty,  continue ?"}]).then(function (answers) {
+                            if (answers.user_input) {
+                                fse.copySync(tmp_path, project_path);
+                                fse.remove(tmp_path);
+                                log.info("create project " +  projectName +  " end !");
+                            } else {
+                                log.info("user cancel");
+                            }
+                            // Use user feedback for... whatever!!
+                        }, function (err) {
+                        });
+                    }
+
+                });
+            } else {
+                log.error(".emicache path not in home dir");
+            }
+        }
+    },
     server : { 
         exec : function (port) {
             log.info ("__emi__ work in path", __emi__.cwd);
@@ -60,6 +113,17 @@ module.exports = {
         exec : function () {
         
         }
+    },
+    config : {
+        exec : function (name, value) {
+            if (!name)  {
+                log.error("emirc set must have a name");
+                return ;
+            }
+            envConfig.set(name, value);
+            log.info("set .emirc name: " +  name +  " value: " + (value || ""));
+
+        } 
     }
 
 }

@@ -1,5 +1,8 @@
 
 var path = require('path');
+var HappyPack = require('happypack');
+var os = require("os");
+var happyThreadPool = HappyPack.ThreadPool({ size: os.cpus().length });
 
 function resolve (dir) {
     return path.join(__dirname, './', dir)
@@ -10,7 +13,7 @@ function resolve (dir) {
 module.exports = {
      library : {
         vendor : [
-          'vue', 'vue-router'
+          'vue', 'vue-router', 'vuex', 'jquery'
 		]
     }, 
     entry : {
@@ -45,10 +48,8 @@ module.exports = {
     //staticPath : 'static',//不需要转化的静态资源文件 
   
     //路径配置 
-    //assetsPath 会增加到 filename 的前面生成物理路径
+    //prefixPath 会增加到 filename 的前面生成物理路径
     //publicPath 同 output 的 publicPath 虚拟路径 
-    
-    
     pathMap : {
         dev : {
             prefixPath : "static",  //路径前缀 
@@ -82,17 +83,14 @@ module.exports = {
                 options : { 
                     loaders : emiUtils.cssLoader(
                         {
-                         extract:true
-                        }),
-
-                    postcss : [
-                            require('autoprefixer')() 
-                         ]
+                            extract:true,
+                            happypack : true
+                        })
                     }
             },
             {
                 test: /\.js$/,
-                loader: 'babel-loader',
+                loader: 'happypack/loader?id=babel',
                 include: [resolve('src')]
             },
             {
@@ -113,6 +111,20 @@ module.exports = {
             }
 
         ]
-    }
-
+    },
+    plugins : [
+        new HappyPack({
+            id : "babel",
+            threadPool: happyThreadPool,
+            cache : true,
+            loaders : [
+                {
+                    loader : "babel-loader" , 
+                    query: {
+                        cacheDirectory: path.resolve(__dirname, "./.cache")
+                    }
+                }
+            ]
+        }) 
+    ]
 }

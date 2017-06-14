@@ -49,12 +49,13 @@ class DllFactory  extends ConfigFactory {
 
     pluginHandle() {
         var outpath = this._outpath();
-        if (this.dev === "dev") {
+        if (this.env === "dev") {
+            this.dll.manifestPath = "/dll/[name]-manifest.json"; //缓存
             this.config.plugins = [
                  new webpack.DllPlugin({
                     path: path.join(outpath, "/dll/[name]-manifest.json"),
                     name: "__lib__[name]__",
-                    context: basedir
+                    context: this.basedir
                 }),
                 this._dllInfoTofile({path : outpath })
             ];

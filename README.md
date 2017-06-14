@@ -167,6 +167,7 @@ module.exports = {
 #### ChangeLogs
 
 v0.20 add happypack webpack-parallel-uglify  support  
+v0.21 optimizeCss default false. It will add optimizeCss Plugin  if  optimizeCss set  in config .
 
 
 
