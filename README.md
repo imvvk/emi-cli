@@ -4,11 +4,11 @@ emi fe develop tool
 
 ### usage
 
-**emi init   [project-name] <template-name>**
+**emi init   <template-name> [project-name] **
 
- template is  vue react  normal vue1 empty 
+init a project in current path
 
-
+template is  vue react  normal vue1 empty  or  a git registry  
 
 **emi start** 
 
@@ -26,6 +26,10 @@ pack local project  dont minify  development context
 
 build local project  minify   production context
 
+**emi set  name value**
+
+set some key to .emirc
+
 
 
 ```
@@ -40,7 +44,7 @@ function resolve (dir) {
 //
 
 module.exports = {
-     library : {
+    library : {
         vendor : [
           'vue', 'vue-router'
 		]
@@ -51,6 +55,7 @@ module.exports = {
 
     htmlMode : "inject",
     //proxy same as vue-cli
+    //后台接口代理
     proxyTable : {
     
     },
@@ -63,7 +68,7 @@ module.exports = {
             chunks : ["main"]
         }
     ],
-    historyApi : true, //开启HTML5 historyAPI  server 使用 所有的访问都到index.html 下
+    //historyApi : true, //开启HTML5 historyAPI  server 使用 所有的访问都到index.html 下
     cssLoader : {
         extra : true,
         vue : true  
@@ -89,7 +94,7 @@ module.exports = {
     //staticPath : 'static',//不需要转化的静态资源文件 
   
     //路径配置 
-    //assetsPath 会增加到 filename 的前面生成物理路径
+    //prefixPath 会增加到 filename 的前面生成物理路径
     //publicPath 同 output 的 publicPath 虚拟路径 
     
     
@@ -167,12 +172,13 @@ module.exports = {
 #### ChangeLogs
 
 v0.20 add happypack webpack-parallel-uglify  support  
-v0.21 optimizeCss default false. It will add optimizeCss Plugin  if  optimizeCss set  in config .
+v0.21 optimizeCss default false. It will add optimizeCss Plugin  if  optimizeCss set  in config .  emi init  could copy from git registry
 
 
 
 #### todos:
 
+- test
 - http proxy
 - https support …
 - ………..
