@@ -164,7 +164,8 @@ class ProjectFactory  extends ConfigFactory {
                 plugins.push(new HappyPack({
                     id : key,
                     threadPool : happyThreadPool,
-                    cache : true,
+                    //close cache use require("xxx.scss") build from cache not from file
+                    //cache : true,
                     loaders :loaders       
                 }));
             }

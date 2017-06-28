@@ -69,7 +69,9 @@ module.exports = {
             if (fs.existsSync(emirc_path)) {
                 download.gitclone(gitpath, tmp_path, function () {
                     download.replaceProjectName(tmp_path, projectName);
-
+                    if (!fs.existsSync(project_path)) {
+                          fse.mkdirsSync(project_path);
+                    }
                     var files = fs.readdirSync(project_path);
                     if (!files.length) {
                         fse.copySync(tmp_path, project_path);

@@ -140,25 +140,7 @@ Server.prototype = {
             logger.access(req);
         });
     },
-    sendFile: function(req, filePath){
 
-        filePath = filePath || path.join(__emi__.cwd, req.url);
-
-        logger.debug('send file: ' + filePath.bold);
-
-        var res = req.res;
-
-        res.set('Access-Control-Allow-Origin', '*');
-
-        res.sendFile(filePath, function(err){
-            if(err){
-                res.statusCode = 404;
-                res.end('404 Not Found');
-                logger.error(err);
-            }
-            logger.access(req);
-        });
-    },
 
     fileExplor : function(req, res, next) {
         var url = req.url;
