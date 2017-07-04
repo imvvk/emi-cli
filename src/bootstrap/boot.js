@@ -16,6 +16,8 @@ program
     .option('-d, --debug', 'print debug log')
     .option('-D, --detail', 'print debug and error detail log')
     .option('-t, --type <type>', 'project type: one of react|react-redux|es6|vue|normal|empty', /^(react|react-redux|es6|vue|normal|empty)$/, 'normal')
+    .option('-M, --memory', 'watch in memory')
+    .option('--dir', 'clear dir dev or dist ', 'dev')
     .option('--no-color', 'disable log color')
     .option('--log-time', 'display log time')
     .option('--https', 'start https server')
@@ -61,6 +63,21 @@ program
         }
     });
 
+
+program
+    .command('watch')
+    .description('watch file change & build in development context')
+    .action(function(){
+        __emi__.env = "dev";
+        var config = require("./config.js");
+        if(config.load()) {
+            var isMemory = program.memory;
+            console.log("isMemory==", isMemory);
+            command.watch.exec(isMemory); 
+        }
+    });
+
+
 program
     .command('pack')
     .description('pack project not  uglify like development')
@@ -81,6 +98,17 @@ program
         var config = require("./config.js");
         if (config.load()) {
             command.pack.exec(true); 
+        }
+    });
+
+program
+    .command('clean')
+    .description('clean prject build dir ')
+    .action(function(name){
+        var config = require("./config.js");
+        if (config.load()) {
+            var dir = program.dir;
+            command.clean.exec(dir); 
         }
     });
 
@@ -108,6 +136,8 @@ function showHelp() {
     console.log('    $ emi start -p 9900');
     console.log('    $ emi pack');
     console.log('    $ emi build');
+    console.log('    $ emi watch');
+    console.log('    $ emi watch --memory');
     console.log('');
 
 }

@@ -161,3 +161,71 @@ module.exports.compileInServer = function (config, basedir, env) {
         //return Factory.compile(project.getConfig(), options);
     }
 }
+
+
+module.exports.compileWatcher = function (config, basedir, env, fs) {
+    var wp, wpWatching;
+    if (config.library) {
+        var dll = new Dll(config, basedir, env);
+        var dllwp = webpack(dll.getConfig());
+        if (fs) {
+            dllwp.outputFileSystem = fs; 
+        }
+        var dllwatching = dllwp.watch(config.watchOptions || {}, function (err, stats) {
+            if (err) throw err;
+            process.stdout.write(stats.toString({
+                colors: true,
+                modules: false,
+                children: false,
+                chunks: false,
+                chunkModules: false
+            }) + '\n\n');
+
+            if(!wp) {
+                var project = new Project(config, basedir, env);
+                var pjConfig = project.getConfig();
+                var wp = webpack(pjConfig);
+                if (fs) {
+                    wp.outputFileSystem = fs;
+                }
+                
+                wpWatching = wp.watch(config.watchOptions || {}, function (err, stats) {
+                    if (err) throw err;
+                    process.stdout.write(stats.toString({
+                        colors: true,
+                        modules: false,
+                        children: false,
+                        chunks: false,
+                        chunkModules: false
+                    }) + '\n\n');
+                });
+            }
+        });
+
+    } else {
+        var project = new Project(config, basedir, env);
+        var pjConfig = project.getConfig();
+        var wp = webpack(pjConfig);
+        if (fs) {
+            wp.outputFileSystem = fs;
+        }
+
+        wpWatching = wp.watch(config.watchOptions || {}, function (err, stats) {
+            if (err) throw err;
+            process.stdout.write(stats.toString({
+                colors: true,
+                modules: false,
+                children: false,
+                chunks: false,
+                chunkModules: false
+            }) + '\n\n');
+        });
+    }
+
+}
+
+
+
+
+
+

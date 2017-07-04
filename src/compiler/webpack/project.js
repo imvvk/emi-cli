@@ -100,7 +100,7 @@ class ProjectFactory  extends ConfigFactory {
             plugins = this.config.plugins;
 
         var me = this;
-        var options = _defOptions(emiConfig.cssLoader || {});
+        var options = _defOptions(emiConfig.cssLoader || {}, this.env);
         options.sourceMap = this._isDev() ? false : true;
         var loaders = this._cssLoader(options, this.env);
         var exts = options.extension;
@@ -164,7 +164,6 @@ class ProjectFactory  extends ConfigFactory {
                 plugins.push(new HappyPack({
                     id : key,
                     threadPool : happyThreadPool,
-                    //close cache use require("xxx.scss") build from cache not from file
                     //cache : true,
                     loaders :loaders       
                 }));
@@ -405,7 +404,7 @@ class ProjectFactory  extends ConfigFactory {
     }
 }
 
-function _defOptions(options)  {
+function _defOptions(options, env)  {
     if (typeof options.extract === "undefined") {
         options.extract = true; 
     }
@@ -434,7 +433,7 @@ module.exports = ProjectFactory;
 var cssLoader = ProjectFactory.prototype._cssLoader;
 module.exports.cssLoader = function (options, env) {
     if (!options) {
-        options =  _defOptions({});
+        options =  _defOptions({}, env);
     }
     return cssLoader(options, env);
 }

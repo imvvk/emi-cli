@@ -1,6 +1,7 @@
 
 var server = require("../server/server.js");
 var pack = require("../compiler/pack.js");
+var watch = require("../compiler/watch.js");
 var fs = require("fs");
 var fse = require("fs-extra");
 var path = require("path");
@@ -111,9 +112,21 @@ module.exports = {
         }
     },
 
+    watch : {
+        exec : function (isMemory) {
+           log.info ("__emi__ work in path", __emi__.cwd);
+           watch(isMemory);
+        } 
+    },
     clean : {
-        exec : function () {
-        
+        exec : function (type) {
+            log.info ("__emi__ work in path", __emi__.cwd);
+            if (type === "prd")  {
+                fse.emptyDirSync(path.join(__emi__.cwd, "./dist"));
+            } else {
+                fse.emptyDirSync(path.join(__emi__.cwd, "./dev"));
+            }
+            log.info ("clean build dir success");
         }
     },
     config : {
