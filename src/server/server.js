@@ -7,6 +7,7 @@ require("colors");
 var express = require('express');
 var path = require('path');
 var fs = require('fs');
+var opn = require('opn');
 var logger = log.namespace('server');
 var config = require("../bootstrap/config.js");
 
@@ -84,6 +85,9 @@ Server.prototype = {
                 server: this.server,
                 httpsServer: this.httpsServer
             });
+
+            // open it in the default browser
+            opn(url + port);
         }
 
         server.on('error', onError);
