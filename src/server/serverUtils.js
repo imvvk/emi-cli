@@ -14,47 +14,37 @@ module.exports = {
 
     addWebpackMiddleware : function (app, basedir, config) {
         return compiler.compileInServer(config, basedir, "dev").then(function (data) {
-            if (data.dll)  {
-                data.dll.watch({}, function(err, stats) {
-                    process.stdout.write(stats.toString({
-                        colors: true,
-                        modules: false,
-                        children: false,
-                        chunks: false,
-                        chunkModules: false
-                    }) + '\n\n');
-                }); 
-
-            } 
-            initMw(data);
-            
-            function initMw(data) {
-                var compiler = data.webpack;
-                var devMw = webpackDevMiddleware(compiler, {
-                    publicPath : data.webpackConfig.output.publicPath || "",
-                    noInfo : program.quite,
-                    stats: {
-                        colors: true
-                    },
-                    quite : program.quite
-                });
-                var hotMw = hotWebpackMiddleware(compiler);
-
-
-                //inject mean use html webpack plugin
-                if (config.htmlMode === "inject") {
-                    // force page reload when html-webpack-plugin template changes
-                    compiler.plugin('compilation', function (compilation) {
-                        compilation.plugin('html-webpack-plugin-after-emit', function (data, cb) {
-                            hotMw.publish({ action: 'reload' })
-                            cb()
-                        })
-                    })
+            var compiler = data.webpack;
+            var devMw = webpackDevMiddleware(compiler, {
+                publicPath : data.webpackConfig.output.publicPath || "",
+                noInfo : program.quite,
+                stats: {
+                    colors: true
+                },
+                quite : program.quite,
+                watchOptions : config.watchOptions || {
+                    aggregateTimeout: 300 
                 }
+                
+            });
+            var hotMw = hotWebpackMiddleware(compiler, {
+                log : false 
+            });
 
-                app.use(devMw);
-                app.use(hotMw);
+
+            //inject mean use html webpack plugin
+            if (config.htmlMode === "inject") {
+                // force page reload when html-webpack-plugin template changes
+                compiler.plugin('compilation', function (compilation) {
+                    compilation.plugin('html-webpack-plugin-after-emit', function (data, cb) {
+                        hotMw.publish({ action: 'reload' })
+                        cb()
+                    })
+                })
             }
+
+            app.use(devMw);
+            app.use(hotMw);
         })
     },
 

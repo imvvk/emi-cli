@@ -12,29 +12,35 @@ var Factory = {
          
     },
 
-    compile : function (config, options) {
+    compile : function (config, options, isWatch) {
         var fs = __emi__.fs;
       
         var wp = webpack(config);
-        if  (options.isServer) {
+        if  (options.isServer && fs) {
             wp.outputFileSystem = fs;
         }
         var promise = new Promise(function (resolve, reject) {
-            wp.run(function (err, stats) {
+            var fn = function (err, stats) {
                 if (err) throw err
-                process.stdout.write(stats.toString({
-                    colors: true,
-                    modules: false,
-                    children: false,
-                    chunks: false,
-                    chunkModules: false
-                }) + '\n\n')
+                if (!program.quite) {
+                    process.stdout.write(stats.toString({
+                        colors: true,
+                        modules: false,
+                        children: false,
+                        chunks: false,
+                        chunkModules: false
+                    }) + '\n\n')
+                }
                 resolve({
                     webpack : wp,
-                    webpackConfig : config,
-                    stats : stats
+                    webpackConfig : config
                 });
-            });
+            }
+            if (!isWatch) {
+                wp.run(fn)
+            } else {
+                 wp.watch(options.watchOptions, fn);
+            }
         }); 
         return promise;
     }

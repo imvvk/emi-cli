@@ -113,27 +113,7 @@ module.exports.compileInServer = function (config, basedir, env) {
     }
     if (config.library) {
         var dll = new Dll(config, basedir, env, isServer);
-        /**
-        return new Promise(function (resolve, reject) {
-            var dllWebpack = webpack(dll.getConfig()) ;
-            resolve({
-                dll : dllWebpack,
-                webpackFn : function () {
-                    var project = new Project(config, basedir, env, isServer);
-                    var pjConfig = project.getConfig();
-                    var fs = __emi__.fs;
-                    var wp = webpack(pjConfig);
-                    wp.outputFileSystem = fs;
-                    return {
-                        webpack : wp,
-                        webpackConfig : pjConfig
-                    }
-                }
-            })
-
-        });
-         ***/
-        return Factory.compile(dll.getConfig(), options).then(function(data) {
+        return Factory.compile(dll.getConfig(), options, true).then(function(data) {
             var project = new Project(config, basedir, env, isServer);
             var pjConfig = project.getConfig();
             var fs = __emi__.fs;
