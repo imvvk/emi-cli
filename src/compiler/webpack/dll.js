@@ -35,15 +35,16 @@ class DllFactory  extends ConfigFactory {
     resolveHandle() {
         var resolve = this.config.resolve; 
         var modules = resolve.modules || [];
-        if (modules.length) {
-            var cmd_nodepath = path.join(__emi__.root, "node_modules");
-            var pro_nodepath = path.join(this.basedir, "node_modules");
-            modules.splice(0,0, cmd_nodepath);
-            if (!~modules.indexOf(pro_nodepath)) {
-                modules.splice(0,0, pro_nodepath);
-            }
-            resolve.modules = modules;
+        var cmd_nodepath = path.join(__emi__.root, "node_modules");
+        var pro_nodepath = path.join(this.basedir, "node_modules");
+       if (!~modules.indexOf(pro_nodepath)) {
+            modules.push(pro_nodepath);
         } 
+
+        if (!~modules.indexOf(cmd_nodepath)) {
+            modules.push(cmd_nodepath);
+        } 
+        resolve.modules = modules;
         return this;
     }
 
