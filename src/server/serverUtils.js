@@ -15,7 +15,7 @@ module.exports = {
     addWebpackMiddleware : function (app, basedir, config) {
         return compiler.compileInServer(config, basedir, "dev").then(function (data) {
             var compiler = data.webpack;
-            
+
             var devMw = webpackDevMiddleware(compiler, {
                 publicPath : data.webpackConfig.output.publicPath || "",
                 noInfo : program.quite,
@@ -46,6 +46,7 @@ module.exports = {
 
             app.use(devMw);
             app.use(hotMw);
+
         })
     },
 
@@ -59,7 +60,7 @@ module.exports = {
                     options = { target: options }
                 }
                 app.use(proxyMiddleware(options.filter || context, options))
-            })
+            });
         }
     },
 

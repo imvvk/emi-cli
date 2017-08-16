@@ -46,7 +46,14 @@ Server.prototype = {
                 app.use(require('connect-history-api-fallback')())
             }
             me.server = require('http').createServer(app).listen(port);
-            return new Promise(me.initEvents.bind(me));
+            return new Promise(me.initEvents.bind(me)).then(function (data){
+                  // open it in the default browser
+                var entryHtml = pc.entryHtml;
+                if (entryHtml && entryHtml[0] && entryHtml[0].filename) {
+                    opn(data.url+ "/"+ entryHtml[0].filename);
+                }
+                return data;
+            });
         });
     },
 
@@ -86,8 +93,7 @@ Server.prototype = {
                 httpsServer: this.httpsServer
             });
 
-            // open it in the default browser
-            opn(url + port);
+          
         }
 
         server.on('error', onError);
