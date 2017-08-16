@@ -53,7 +53,7 @@ class ProjectFactory  extends ConfigFactory {
     }
 
     _filename() {
-        if (this.env === "dev") {
+        if (this.env === "dev" || this.emi_config.isModule) {
             return "scripts/[name].js";
         } else {
             return "scripts/[name].[chunkhash].js";
@@ -106,12 +106,7 @@ class ProjectFactory  extends ConfigFactory {
         var exts = options.extension;
         var fn = function () {}
         if (options.happypack) {
-            //add Css  happayPack loader
-            /**
-            if (~exts.indexOf("postcss")) {
-                exts = exts.concat("postcss");
-            }
-            **/
+           
             var key_map = {
                 "sass" : "sass",
                 "scss" : "sass",
@@ -164,7 +159,6 @@ class ProjectFactory  extends ConfigFactory {
                 plugins.push(new HappyPack({
                     id : key,
                     threadPool : happyThreadPool,
-                    //cache : true,
                     loaders :loaders       
                 }));
             }
@@ -180,7 +174,7 @@ class ProjectFactory  extends ConfigFactory {
                 use: loaders[ext] 
             }
         });
-        var filename = !this._isDev() ? "styles/[name].[contenthash].css" : "styles/[name].css";
+        var filename = !this._isDev() && !this.emi_config.isModule ? "styles/[name].[contenthash].css" : "styles/[name].css";
 
         if (options.extract) {
             plugins.push(new ExtractTextPlugin({
@@ -274,26 +268,22 @@ class ProjectFactory  extends ConfigFactory {
                     'NODE_ENV': JSON.stringify('production')
                 }
             }));
-            /**
-            plugins.push(new webpack.optimize.UglifyJsPlugin({
-                compress: {
-                    warnings: false
-                },
-                //sourceMap: true
-            }));
-             **/
-            plugins.push(new ParallelUglifyPlugin({
-                cacheDir: '.cache/',
-                uglifyJS:{
-                    output: {
-                        comments: false
-                    },
-                    compress: {
-                        warnings: false
-                    },
-                    sourceMap : true
-                }
-            })),
+            if (!this.emi_config.isModule) {
+                plugins.push(
+                    new ParallelUglifyPlugin({
+                        cacheDir: '.cache/',
+                        uglifyJS:{
+                            output: {
+                                comments: false
+                            },
+                            compress: {
+                                warnings: false
+                            },
+                            sourceMap : true
+                        }
+                    })
+                );
+            }
             copyStatic();    
             plugins.push(new ManifestPlugin());
             if (emiConfig.optimizeCss) {

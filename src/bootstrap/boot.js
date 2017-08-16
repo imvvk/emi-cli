@@ -72,7 +72,6 @@ program
         var config = require("./config.js");
         if(config.load()) {
             var isMemory = program.memory;
-            console.log("isMemory==", isMemory);
             command.watch.exec(isMemory); 
         }
     });

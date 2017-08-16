@@ -99,8 +99,10 @@ module.exports.compile = function (config, basedir, env) {
             });
         });
     } else {
+        fse.removeSync(output);
         project= new Project(config,basedir , env, isServer);
-        return Factory.compile(project.getConfig(), options);
+        var projectConfig = project.getConfig();
+        return Factory.compile(projectConfig, options);
     }
 }
 
@@ -203,8 +205,6 @@ module.exports.compileWatcher = function (config, basedir, env, fs) {
     }
 
 }
-
-
 
 
 
