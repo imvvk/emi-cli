@@ -38,13 +38,30 @@ Server.prototype = {
         app.use(preHandler);
 
         var pc = config.getProject();
-        return serverUtils.addWebpackMiddleware(app, __emi__.cwd, pc.config).then(function () {
-            serverUtils.addStaticMiddleware(app,  __emi__.cwd, pc.config);
-            serverUtils.addProxyMiddleware(app, __emi__.cwd, pc.config);
-            app.use(me.fileExplor.bind(me));
-            if (pc.config.historyApi) {
-                app.use(require('connect-history-api-fallback')())
+
+        serverUtils.addStaticMiddleware(app,  __emi__.cwd, pc.config);
+        serverUtils.addProxyMiddleware(app, __emi__.cwd, pc.config);
+
+        if (pc.config.historyApi) {
+            if (pc.config.historyApi === true) {
+                pc.config.historyApi = {}; 
             }
+            app.use(require('connect-history-api-fallback')(pc.config.historyApi))
+        }
+
+        return serverUtils.addWebpackMiddleware(app, __emi__.cwd, pc.config).then(function () {
+            
+            app.use(me.fileExplor.bind(me));
+            app.use(function(err, req, res, next) {
+                if (err.status && err.status  != "404") {
+                     logger.error("server error:", err , err.stack);
+                }
+                res.status(err.status || 500);
+                res.send(err.message || "服务器错误");
+                logger.error(err);
+                logger.access(req);
+            });
+
             me.server = require('http').createServer(app).listen(port);
             return new Promise(me.initEvents.bind(me)).then(function (data){
                   // open it in the default browser
@@ -175,11 +192,8 @@ Server.prototype = {
                 this.sendFile(req)
             }
         }catch(e){
-            res.statusCode = 404;
-            res.end('404 Not Found');
-
-            logger.error(e);
-            logger.access(req);
+            next(e);
+           
         }
     }
 

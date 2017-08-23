@@ -29,7 +29,7 @@ module.exports = {
                 
             });
             var hotMw = hotWebpackMiddleware(compiler, {
-                log : false 
+                log : ()=> {} 
             });
 
 
