@@ -13,9 +13,7 @@ var HappyPack = require('happypack');
 var happyThreadPool = HappyPack.ThreadPool({ size: os.cpus().length });
 
 var FriendlyErrorsPlugin = require('friendly-errors-webpack-plugin')
-var ParallelUglifyPlugin = require('webpack-parallel-uglify-plugin');
-
-
+var ParallelUglifyPlugin = require('webpack-parallel-uglify-plugin'); 
 
 var ConfigFactory = require("./base.js");
 
@@ -178,7 +176,8 @@ class ProjectFactory  extends ConfigFactory {
 
         if (options.extract) {
             plugins.push(new ExtractTextPlugin({
-                filename : this._join(this._prefixPath(), filename)
+                filename : this._join(this._prefixPath(), filename),
+                allChunks: true
             }));
         }
         module.rules = rules.concat(cssLoaders);
