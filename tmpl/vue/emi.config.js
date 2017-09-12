@@ -1,68 +1,65 @@
-
 var path = require('path');
 var HappyPack = require('happypack');
 var os = require("os");
 var happyThreadPool = HappyPack.ThreadPool({ size: os.cpus().length });
 
+
 function resolve (dir) {
     return path.join(__dirname, './', dir)
 }
 
-//
+// Plugins
+// -------------------------------
+var plugins = [
+    new HappyPack({
+        id : "babel",
+        threadPool: happyThreadPool,
+        cache : true,
+        loaders : [
+            {
+                loader : "babel-loader" , 
+                query: {
+                    cacheDirectory: path.resolve(__dirname, "./.cache")
+                }
+            }
+        ]
+    }),
+];
+
 
 module.exports = {
-     library : {
-        vendor : [
-          'vue', 'vue-router', 'vuex', 'jquery'
-		]
+
+    library : {
+        'vendor' : [
+            'vue', 'vue-router' , 'vuex'
+        ]
     }, 
+
     entry : {
-        "main" : "./src/main.js",
+        index : "./src/pages/home/index.js"
     },
 
     htmlMode : "inject",
 
-    entryHtml : [
-        {
-            filename : "index.html",
-            template : "src/index.html",
-            inject : "body",
-            chunks : ["main"]
-        }
-    ],
+    entryHtml : [{
+        filename : "index.html",
+        template : "./src/html/index.html",
+        inject : "body",
+        chunks : [ "index" ]
+    }],
     //historyApi : true, //开启HTML5 historyAPI  server 使用 所有的访问都到index.html 下
     cssLoader : {
         extra : true,
-        //happypack : true  default true
+        happypack : true, // default true
         vue : true  
     },
-    /**
-     * css Loader 生成器 
-    cssLoader : {
-        sass : {},
-        postcss : {},
-        extra : true,
-        vue : true  
+
+    proxyTable: {
     },
-    **/
-    //staticPath : 'static',//不需要转化的静态资源文件 
-  
-    //路径配置 
-    //prefixPath 会增加到 filename 的前面生成物理路径
-    //publicPath 同 output 的 publicPath 虚拟路径 
-    pathMap : {
-        dev : {
-            prefixPath : "static",  //路径前缀 
-            publicPath : "",
-        },
-        prd : {
-            prefixPath : "static",
-            publicPath : ""
-        }
-    },
-    
+
     resolve: {
         extensions: ['.js', '.vue', '.json'],
+        mainFiles : ["index", "index.vue"],
         modules: [
             resolve('src'),
             resolve('node_modules')
@@ -71,7 +68,7 @@ module.exports = {
             'vue$': 'vue/dist/vue.common.js',
             'src': resolve('src'),
             'assets': resolve('src/assets'),
-            'components': resolve('src/components')
+            'components': resolve('src/components'),
         }
     },
 
@@ -85,8 +82,9 @@ module.exports = {
                         {
                             extract:true,
                             happypack : true
-                        })
-                    }
+                        }
+                    )
+                }
             },
             {
                 test: /\.js$/,
@@ -109,22 +107,9 @@ module.exports = {
                     name: 'static/fonts/[name].[hash:7].[ext]'
                 }
             }
-
         ]
     },
-    plugins : [
-        new HappyPack({
-            id : "babel",
-            threadPool: happyThreadPool,
-            cache : true,
-            loaders : [
-                {
-                    loader : "babel-loader" , 
-                    query: {
-                        cacheDirectory: path.resolve(__dirname, "./.cache")
-                    }
-                }
-            ]
-        }) 
-    ]
+    plugins : plugins
 }
+
+
