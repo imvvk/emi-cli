@@ -11,8 +11,7 @@
       "component", 
       [
         {
-          "libraryName": "element-ui",
-          "styleLibraryName": "~src/theme/dist"
+          "libraryName": "element-ui"
         }
       ]
     ]

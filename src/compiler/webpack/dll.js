@@ -3,6 +3,8 @@ var path = require("path");
 var webpack = require("webpack");
 
 var ConfigFactory = require("./base.js");
+var UglifyJSPlugin = require('uglifyjs-webpack-plugin')
+
 
 class DllFactory  extends ConfigFactory {
 
@@ -76,11 +78,7 @@ class DllFactory  extends ConfigFactory {
                     name: "__lib__[name]__",
                     context: this.basedir
                 }),
-                new webpack.optimize.UglifyJsPlugin({
-                    compress: {
-                        warnings: false
-                    }
-                }),
+                new UglifyJSPlugin(this.emi_config.dllUglify),
                 this._dllInfoTofile({path : outpath })
             ]
         }
