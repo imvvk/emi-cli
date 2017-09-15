@@ -24,6 +24,7 @@ class ProjectFactory  extends ConfigFactory {
     constructor(emi_config, basedir, env, isServer) {
         super(emi_config, basedir, env);
         this.isServer = isServer;
+        this.manifestSeed = {};
     }
 
     entryHandle () {
@@ -255,7 +256,9 @@ class ProjectFactory  extends ConfigFactory {
                     'NODE_ENV': JSON.stringify('development')
                 }
             }));
-            plugins.push(new ManifestPlugin());
+            plugins.push(new ManifestPlugin({
+                seed : this.manifestSeed
+            }));
             if (!this.isServer) {
                 copyStatic();    
             } else {
@@ -285,7 +288,9 @@ class ProjectFactory  extends ConfigFactory {
                 );
             }
             copyStatic();    
-            plugins.push(new ManifestPlugin());
+            plugins.push(new ManifestPlugin({
+                seed : this.manifestSeed
+            }));
             if (emiConfig.optimizeCss) {
                 plugins.push(new OptimizeCSSPlugin(emiConfig.optimizeCss));
             }
@@ -315,6 +320,13 @@ class ProjectFactory  extends ConfigFactory {
                 context: this.basedir,
                 manifest : this._getDllMainfest(path.join(outpath, "/dll/"+dll+"-manifest.json"))
             }))
+            var seed = this.manifestSeed;
+            var dllfiles = this._getDllFileJson({path : this.outpath});
+            var assets = Object.keys(dllfiles).map(function (key) {
+                var file = dllfiles[key][0]
+                seed[key] = file;
+                return file;
+            });
         }
         return this;
     }
