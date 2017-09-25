@@ -101,7 +101,7 @@ class ProjectFactory  extends ConfigFactory {
             plugins = this.config.plugins;
 
         var me = this;
-        var options = _defOptions(emiConfig.cssLoader || {}, this.env);
+        var options = _defOptions(Object.assign({} , emiConfig.cssLoader) , this.env);
         options.sourceMap = this._isDev() ? false : true;
         var loaders = this._cssLoader(options, this.env);
         var exts = options.extension;
@@ -178,9 +178,10 @@ class ProjectFactory  extends ConfigFactory {
         var filename = !this._isDev() && !this.emi_config.isModule ? "styles/[name].[contenthash].css" : "styles/[name].css";
 
         if (options.extract) {
-            plugins.push(new ExtractTextPlugin({
+            var extractUserSet = _.isObject(options.extract) ? options.extract : {};
+            plugins.push(new ExtractTextPlugin(Object.assign({
                 filename : this._join(this._prefixPath(), filename)
-            }));
+            }, extractUserSet)));
         }
         module.rules = rules.concat(cssLoaders);
         return this;
@@ -225,10 +226,11 @@ class ProjectFactory  extends ConfigFactory {
             // (which is the case during production build)
             //如果是vue 项目 fallback 使用vue-loader
             if (options.extract) {
-                return ExtractTextPlugin.extract({
+                var extractUserSet = _.isObject(options.extract) ? options.extract : {};
+                return ExtractTextPlugin.extract(Object.assign({
                     use: loaders,
                     fallback: fallback
-                });
+                }, extractUserSet));
             } else {
                 return [fallback].concat(loaders)
             }
@@ -407,9 +409,11 @@ class ProjectFactory  extends ConfigFactory {
 }
 
 function _defOptions(options, env)  {
-    if (typeof options.extract === "undefined") {
+    if (env == "dev" && !options.packDevCss ) {
+        options.extract = false; 
+    } else if (typeof options.extract === "undefined") {
         options.extract = true; 
-    }
+    } 
     if (typeof options.extension === "undefined") {
         options.extension = ["css", "scss", "sass"]; 
     }
@@ -434,8 +438,11 @@ function _defOptions(options, env)  {
 module.exports = ProjectFactory;
 var cssLoader = ProjectFactory.prototype._cssLoader;
 module.exports.cssLoader = function (options, env) {
-    if (!options) {
-        options =  _defOptions({}, env);
-    }
-    return cssLoader(options, env);
+    var argv = process.argv;
+    var isDev = argv.some(function (arg) {
+        return arg === "start"; 
+    });
+
+    options =  _defOptions(Object.assign({}, options), isDev ? 'dev' : 'prd');
+    return cssLoader(options, isDev ? 'dev' : 'prd');
 }

@@ -174,6 +174,9 @@ module.exports = {
 v0.20 add happypack webpack-parallel-uglify  support  
 v0.21 optimizeCss default false. It will add optimizeCss Plugin  if  optimizeCss set  in config .  emi init  could copy from git registry
 
+v0.2.11 add extract Object options  
+        dev mode  default is not  use  extract
+
 
 
 #### todos:

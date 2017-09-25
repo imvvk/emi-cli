@@ -1,6 +1,6 @@
 {
   "name": "emi-cli",
-  "version": "0.2.10",
+  "version": "0.2.11",
   "description": "a web developer tools for emi ",
   "main": "index.js",
   "scripts": {
