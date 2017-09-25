@@ -87,10 +87,13 @@ module.exports = {
     cssLoader : {
         sass : {},
         postcss : {},
-        extra : true,
+        extract : {
+            allChunks : true
+        },
         vue : true  
     },
     **/
+    packDevCss : true // 开发环境中使用 extract-text-plugin 默认不使用
     //staticPath : 'static',//不需要转化的静态资源文件 
   
     //路径配置 
@@ -174,7 +177,7 @@ module.exports = {
 v0.20 add happypack webpack-parallel-uglify  support  
 v0.21 optimizeCss default false. It will add optimizeCss Plugin  if  optimizeCss set  in config .  emi init  could copy from git registry
 
-v0.2.11 add extract Object options  
+v0.2.12 add extract Object options  
         dev mode  default is not  use  extract
 
 
