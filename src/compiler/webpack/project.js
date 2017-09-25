@@ -179,9 +179,9 @@ class ProjectFactory  extends ConfigFactory {
 
         if (options.extract) {
             var extractUserSet = _.isObject(options.extract) ? options.extract : {};
-            plugins.push(new ExtractTextPlugin(Object.assign({
+            plugins.push(new ExtractTextPlugin(Object.assign(extractUserSet, {
                 filename : this._join(this._prefixPath(), filename)
-            }, extractUserSet)));
+            })));
         }
         module.rules = rules.concat(cssLoaders);
         return this;
@@ -227,10 +227,10 @@ class ProjectFactory  extends ConfigFactory {
             //如果是vue 项目 fallback 使用vue-loader
             if (options.extract) {
                 var extractUserSet = _.isObject(options.extract) ? options.extract : {};
-                return ExtractTextPlugin.extract(Object.assign({
+                return ExtractTextPlugin.extract(Object.assign(extractUserSet, {
                     use: loaders,
                     fallback: fallback
-                }, extractUserSet));
+                }));
             } else {
                 return [fallback].concat(loaders)
             }
