@@ -69,31 +69,36 @@ module.exports = {
         }
     ],
     //historyApi : true, //开启HTML5 historyAPI  server 使用 所有的访问都到index.html 下
-    cssLoader : {
-        extra : true,
-        vue : true  
-    },
     /**
-     * optimizeCss : {
+     * css Loader 生成器 
+     
+        cssLoader : {
+            sass : {},
+            postcss : {},
+            extract : {
+                allChunks : true
+            },
+            vue : true  
+        },
+    *    
+    **/
+    packDevCss : true // 开发环境中使用 extract-text-plugin 默认不使用
+    /**
+     *
+     optimizeCss : {
         cssProcessorOptions: {
             discardComments: {removeAll: true},
             //避免cssnano 重新计算z-index, 引用外部CSS场景使用
             safe: true
         }
-    },
+      },
+     *  
      **/
-    /**
-     * css Loader 生成器 
-    cssLoader : {
-        sass : {},
-        postcss : {},
-        extract : {
-            allChunks : true
-        },
-        vue : true  
-    },
-    **/
-    packDevCss : true // 开发环境中使用 extract-text-plugin 默认不使用
+
+
+
+
+
     //staticPath : 'static',//不需要转化的静态资源文件 
   
     //路径配置 
