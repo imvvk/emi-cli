@@ -179,9 +179,13 @@ class ProjectFactory  extends ConfigFactory {
 
         if (options.extract) {
             var extractUserSet = _.isObject(options.extract) ? options.extract : {};
-            plugins.push(new ExtractTextPlugin(Object.assign(extractUserSet, {
-                filename : this._join(this._prefixPath(), filename)
-            })));
+            plugins.push(
+                new ExtractTextPlugin(
+                    Object.assign({}, extractUserSet, {
+                        filename : this._join(this._prefixPath(), filename)
+                    })
+                )
+            );
         }
         module.rules = rules.concat(cssLoaders);
         return this;
@@ -227,7 +231,7 @@ class ProjectFactory  extends ConfigFactory {
             //如果是vue 项目 fallback 使用vue-loader
             if (options.extract) {
                 var extractUserSet = _.isObject(options.extract) ? options.extract : {};
-                return ExtractTextPlugin.extract(Object.assign(extractUserSet, {
+                return ExtractTextPlugin.extract(Object.assign({} , extractUserSet, {
                     use: loaders,
                     fallback: fallback
                 }));
@@ -409,9 +413,7 @@ class ProjectFactory  extends ConfigFactory {
 }
 
 function _defOptions(options, env)  {
-    if (env == "dev" && !options.packDevCss ) {
-        options.extract = false; 
-    } else if (typeof options.extract === "undefined") {
+    if (options.extract === "undefined") {
         options.extract = true; 
     } 
     if (typeof options.extension === "undefined") {
