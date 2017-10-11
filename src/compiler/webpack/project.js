@@ -102,7 +102,8 @@ class ProjectFactory  extends ConfigFactory {
 
         var me = this;
         var options = _defOptions(Object.assign({} , emiConfig.cssLoader) , this.env);
-        options.sourceMap = this._isDev() ? false : true;
+        //options.sourceMap = this._isDev() ? false : true;
+        options.sourceMap = false;
         var loaders = this._cssLoader(options, this.env);
         var exts = options.extension;
         var fn = function () {}
@@ -231,7 +232,7 @@ class ProjectFactory  extends ConfigFactory {
             //如果是vue 项目 fallback 使用vue-loader
             if (options.extract) {
                 var extractUserSet = _.isObject(options.extract) ? options.extract : {};
-                return ExtractTextPlugin.extract(Object.assign({} , extractUserSet, {
+                return ExtractTextPlugin.extract(Object.assign({}, extractUserSet, {
                     use: loaders,
                     fallback: fallback
                 }));
@@ -413,7 +414,7 @@ class ProjectFactory  extends ConfigFactory {
 }
 
 function _defOptions(options, env)  {
-    if (options.extract === "undefined") {
+    if (typeof options.extract === "undefined") {
         options.extract = true; 
     } 
     if (typeof options.extension === "undefined") {

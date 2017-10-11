@@ -82,7 +82,6 @@ module.exports = {
         },
     *    
     **/
-    packDevCss : true // 开发环境中使用 extract-text-plugin 默认不使用
     /**
      *
      optimizeCss : {
