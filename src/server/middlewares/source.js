@@ -1,6 +1,8 @@
 /**
  * @file
  * @author zdying
+ * 文件系统图标显示使用
+ * 
  */
 
 'use strict';

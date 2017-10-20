@@ -4,7 +4,7 @@
  */
 var path = require("path");
 var os = require('os');
-var fs = require('fs-extra');
+var fs = require('fs');
 var program = require('commander');
 var child_process = require("child_process");
 
@@ -19,7 +19,7 @@ var __emi__ = {
      */
     globalRoot: child_process.execSync('npm root -g').toString().trim(),
     /**
-     * hiipack根目录
+     * 工具根目录
      */
     root: path.join(__dirname, '../../'),
     /**
@@ -27,7 +27,7 @@ var __emi__ = {
      */
     cwd: process.cwd(),
 
-    fs : fs
+    fs : null
 }
 
 

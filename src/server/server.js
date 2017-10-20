@@ -8,18 +8,26 @@ var express = require('express');
 var path = require('path');
 var fs = require('fs');
 var opn = require('opn');
+var detectPort = require('detect-port');
+var url = require('url');
+
 var logger = log.namespace('server');
 var config = require("../bootstrap/config.js");
 
-var complier = require("../compiler/compiler.js");
-
 // 中间件
-var favicon = require('./middlewares/favicon');
-var source = require('./middlewares/source');
-var preHandler = require('./middlewares/preHandler');
+var favicon = require('serve-favicon');
+var source = require('./middlewares/source.js');
+var static = require('./middlewares/static.js');
+var proxy = require('./middlewares/proxy.js');
+var webpackDevMiddleware = require('webpack-dev-middleware')
+var hotWebpackMiddleware = require('webpack-hot-middleware')
+
+var webpack = require('../compiler/webpack.js');
 
 var fileExplorer = require("../helpers/fileExplorer.js"); 
-var serverUtils =  require("./serverUtils.js");
+
+var customCmd = require('../helpers/customCmd.js');
+
 
 var Server = function (port) {
     this.app = express();
@@ -30,48 +38,117 @@ Server.prototype = {
 
     start : function () {
         var me = this;
-        var app = this.app, port = this.port;
+        var app = this.app, 
+            port = this.port,
+            pc = config.getProject();
 
-        app.use('/__source__/', source.bind(this));
-        app.get('*/favicon.ico', favicon.bind(this));
 
-        app.use(preHandler);
-
-        var pc = config.getProject();
-
-        serverUtils.addStaticMiddleware(app,  __emi__.cwd, pc.config);
-        serverUtils.addProxyMiddleware(app, __emi__.cwd, pc.config);
-
-        if (pc.config.historyApi) {
-            if (pc.config.historyApi === true) {
-                pc.config.historyApi = {}; 
-            }
-            app.use(require('connect-history-api-fallback')(pc.config.historyApi))
-        }
-
-        return serverUtils.addWebpackMiddleware(app, __emi__.cwd, pc.config).then(function () {
-            
-            app.use(me.fileExplor.bind(me));
-            app.use(function(err, req, res, next) {
-                if (err.status && err.status  != "404") {
-                     logger.error("server error:", err , err.stack);
+        return detectPort(port)
+            .then((_port) => {
+                if (port != _port) {
+                    throw new Error('端口被占用，请选择其他端口');
+                    return;
                 }
-                res.status(err.status || 500);
-                res.send(err.message || "服务器错误");
-                logger.error(err);
-                logger.access(req);
-            });
+                app.use(favicon(path.join(__dirname, './source/favicon.ico')));
+                app.use('/__source__/', source.bind(this));
+                //proxy middleware
+                proxy(app, __emi__.cwd, pc.config);
+                return webpack.getInstance(pc.config, __emi__.cwd, 'dev');
+            }).then((data) => {
+                var compiler = data.webpack;
+                var webpackConfig = data.config;
+                var publicPath = webpackConfig.output.publicPath || '/';
+                        //static middleware
+                app.use(static(__emi__.cwd, pc.config, publicPath));
 
-            me.server = require('http').createServer(app).listen(port);
-            return new Promise(me.initEvents.bind(me)).then(function (data){
-                  // open it in the default browser
-                var entryHtml = pc.entryHtml;
-                if (entryHtml && entryHtml[0] && entryHtml[0].filename) {
-                    opn(data.url+ "/"+ entryHtml[0].filename);
+                //单页面APP 中间件
+                if (pc.config.historyApi) {
+                    if (pc.config.historyApi === true) {
+                        pc.config.historyApi = {}; 
+                    }
+                    pc.config.historyApi.logger = logger.debug;
+                    app.use(require('connect-history-api-fallback')(pc.config.historyApi))
                 }
+
+                //webpack dev middleware
+                app.use(webpackDevMiddleware(compiler, {
+                    publicPath : publicPath,
+                    noInfo : program.quite,
+                    stats: {
+                        colors: true
+                    },
+                    quite : program.quite,
+                    watchOptions : config.watchOptions || {
+                        aggregateTimeout: 300 
+                    }
+                }));
+    
+
+                //热替换 中间件
+                var hotMiddleware = hotWebpackMiddleware(compiler, {
+                    log : () => {} 
+                });
+                app.use(hotMiddleware)
+
+                var opened = false;
+
+
+                if (pc.config.htmlMode === "inject") {
+                    // force page reload when html-webpack-plugin template changes
+                    compiler.plugin('compilation', (compilation) => {
+                        compilation.plugin('html-webpack-plugin-after-emit', function (data, cb) {
+                            hotMiddleware.publish({ action: 'reload' })
+                            cb()
+                        })
+                    });
+                }
+
+          
+
+             
+                //文件系统中间件
+                app.use(me.fileExplor.bind(me));
+
+                app.use(function(err, req, res, next) {
+                    if (err.status && err.status  != "404") {
+                        logger.error("server error:", err , err.stack);
+                    }
+                    res.status(err.status || 500);
+                    res.send(err.message || "服务器错误");
+                    logger.error(err);
+                    logger.access(req);
+                });
+
+                me.server = require('http').createServer(app).listen(port);
+                return new Promise(me.initEvents.bind(me)).then( (data) => {
+                    // open it in the default browser when server start
+                    if (pc.config.openBrowser) {
+                        if (typeof pc.config.openBrowser === 'string') {
+                            opn(pc.config.openBrowser); 
+                        } else {
+                            var entryHtml = pc.entryHtml;
+                            if (entryHtml && entryHtml[0] && entryHtml[0].filename) {
+                                opn(data.url+ path.join(publicPath, entryHtml[0].filename));
+                            }
+                        }
+                    }
+                    return data;
+                });
+
+            }).then((data) => {
+                this.startCustomCmd(pc.config.serverCommonds);
                 return data;
             });
-        });
+
+    },
+
+
+    startCustomCmd : function (cmdList) {
+        if (cmdList && cmdList.length) {
+            cmdList.forEach(function (data) {
+                customCmd(data);
+            });
+        } 
     },
 
     initEvents: function(resolve, reject){
@@ -170,19 +247,20 @@ Server.prototype = {
 
 
     fileExplor : function(req, res, next) {
-        var url = req.url;
-        var filePath = __emi__.cwd + url;
+        var uri = url.parse(req.originalUrl).path;
+        var filePath = path.join(__emi__.cwd , uri);
+
 
         try{
             var stat = fs.statSync(filePath);
             if(stat.isDirectory()){
                 // 如果目录没有以`/`结尾
-                if(!/\/$/.test(url)){
-                    res.redirect(url + '/');
+                if(!/\/$/.test(uri)){
+                    res.redirect(uri + '/');
                     return
                 }
 
-                fileExplorer.renderList(url, filePath)
+                fileExplorer.renderList(uri, filePath)
                     .then(function(html){
                         res.setHeader('Content-Type', 'text/html');
                         res.end(html);
@@ -208,7 +286,7 @@ module.exports.start = function start (port) {
     server.start().then(function (server) {
         log.info(("server start:"+ server.url).green);
     }).catch(function (err) {
-        log.error("server error:", err);
+        console.log("server error:" , err);
     }); 
 
 }

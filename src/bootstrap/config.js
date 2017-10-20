@@ -10,6 +10,14 @@ var path = require("path");
 var PROJECTS_CONFIG = {};
 var DEFAULT_HTML_MODE = "inject" // inject or replace;
 
+
+var DEFAULT_CONFIG = {
+    minify : true,  //是否最压缩 
+    commonPack : true, // 是否加入 公共包
+    packCss : false //
+}
+
+
 var loaded = false;
 module.exports = {
     load : function (refresh) {
@@ -49,7 +57,8 @@ module.exports = {
 
 function loadConfig() {
     var cwd = process.cwd();
-    var config = _load(cwd);
+    var config = _.merge({}, DEFAULT_CONFIG,  _load(cwd));
+
     var projects;
 
     if (config) {
@@ -79,15 +88,36 @@ function loadConfig() {
 
     function _load(p) {
         var content, config;
+        var root = path.parse(p).root;
         try {
+            var configjs =  getConfigPath(p, root);
             //content = fs.readFileSync(path.join(p, "./emi.config.js"), "utf-8");
-            var configjs = path.join(p, "./emi.config.js");
+            //var configjs = path.join(p, "./emi.config.js");
+            var cwd = path.parse(configjs).dir;
+            console.log(cwd, __emi__.cwd);
+            if (cwd != __emi__.cwd) {
+                process.chdir(cwd);
+                __emi__.cwd = cwd;
+            }
             config = require(configjs);
         } catch(e) {
             log.error("load config fail in ", p );
             log.error("error : ", e);
         }
         return config;
+    }
+    function getConfigPath(p, root) {
+
+        if (p === root) {
+            return;
+        }
+        var configPath =  path.join(p, "./emi.config.js");
+
+        if (fs.existsSync(configPath)) {
+            return configPath;
+        } else {
+            return getConfigPath(path.join(p, '../'), root); 
+        }
     }
 
     function _resolve(config, projectPath) {

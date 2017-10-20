@@ -3,22 +3,28 @@ var os = require("os");
 var fs = require("fs");
 var fse = require("fs-extra");
 var colors = require('colors');
-var gitclone = require("git-clone");
+var download = require('download');
+var envConfig = require("../helpers/config.js");
 
-function download(gitpath, dest, options ,callback) {
+function downloadGit(gitpath, dest, options ,callback) {
     if (typeof options === "function") {
         callback = options;
         options = {}; 
     }
-    gitclone(gitpath, dest , options, function (err) {
-        if (err === undefined) {
-            rmGit(dest);
-            if (callback) {
-                callback(); 
-            }
-        } else {
-            console.log(err);
+    var git =envConfig.get("git");
+    if (!git.match(/\/$/)) {
+        git +="/";
+    }
+    var gitUrl = git+gitpath+ '/repository/archive';
+    if (options.checkout) {
+        gitUrl += '?ref='+options.checkout;
+    }
+    download(gitUrl, dest , { extract: true, strip: 1, mode: '666', headers: { accept: 'application/zip' } }).then(function (err) {
+        if (callback) {
+            callback(); 
         }
+    }).catch(function (err) {
+        console.log(err);
     });
 }
 
@@ -40,7 +46,7 @@ function replaceProjectName(dest, name, reg) {
 }
 
 module.exports = {
-    gitclone :  download,
+    gitclone :  downloadGit,
     replaceProjectName : replaceProjectName
 }
  

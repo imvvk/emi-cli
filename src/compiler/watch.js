@@ -2,19 +2,32 @@
 
 var fs = require("fs-extra");
 var config = require("../bootstrap/config.js");
-var compiler = require("./compiler.js");
-var compilerUtils = require("./utils.js");
-var MemoryFS = require("memory-fs");
+var webpack = require("./webpack.js"); 
 
 module.exports = function (isMemory) {
     var pc = config.getProject();
     var env = "dev";
-    var fs;
-    if (isMemory) {
-        fs = new MemoryFS();
-        __emi__.fs = fs;
-    } 
-    compiler.compileWatcher(pc.config, __emi__.cwd, env, fs);
 
+    var compiler =  webpack.getInstance(pc.config, __emi__.cwd, 'dev').then(function (data) {
+        var compiler = data.webpack; 
+        var watching = compiler.watch({
+
+        }, (err, stats) => {
+            if (err) {
+                console.log(err);
+                return;
+            }
+            if (!program.quite) {
+                process.stdout.write(stats.toString({
+                    colors: true,
+                    modules: false,
+                    children: false,
+                    chunks: false,
+                    chunkModules: false
+                }) + '\n\n')
+            } 
+        });
+
+    });
 }
 

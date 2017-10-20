@@ -1,113 +1,121 @@
 
+var _ = require("lodash");
 var path = require("path");
 var webpack = require("webpack");
-
 var ConfigFactory = require("./base.js");
-var UglifyJSPlugin = require('uglifyjs-webpack-plugin')
+
+var devConfig = require("./config/dll.dev.js");
+var prdConfig = require("./config/dll.prd.js");
+var merge = require('../utils/merge.js');
 
 
 class DllFactory  extends ConfigFactory {
 
     constructor(emi_config, basedir, env) {
         super(emi_config, basedir, env);
-        this.dll = {};
+        var manifest = "dll/[name]-manifest.json";
+        this.dll = {
+            manifest : manifest,
+            manifestPath : path.join(this._outpath(), manifest),
+            files : []
+        };
+        //this.config.plugins = []; //dll 不继承 主plugin
+        this.setEntry();
+        this.mergeEnvConfig();
+        this.setCustom();
     }
 
-    entryHandle() {
+    /**
+     * 将library 作为DLL 的入口文件
+     *
+     */
+    setEntry() {
         this.config.entry = this.emi_config.library; 
         return this; 
     }
 
-    outHandle() {
-        var output = Object.assign({} ,this.emi_config.output);
-        if (!output.path) {
-            output.path = this._outpath(); 
+    setCustom() {
+        this.setOutput();
+        this.setResolve();
+        this.setResolveLoaders();
+        this.setPlugins();
+    }
+
+    mergeDev() {
+        var defConfig , outConfig;
+        if (_.isFunction(this.emi_config.devDllConfig)) {
+            outConfig = this.emi_config.devDllConfig(this.dll.manifestPath, this.emi_config, this);
         }
+        defConfig = devConfig(this.dll.manifestPath, this.emi_config, this); 
+        this.config = merge(defConfig, this.config, outConfig);
+        
+    }
+
+    mergePrd() {
+        var defConfig , outConfig;
+        if (_.isFunction(this.emi_config.prdDllConfig)) {
+            outConfig = this.emi_config.prdDllConfig(this.dll.manifestPath, this.emi_config, this);
+        } 
+        defConfig = prdConfig(this.dll.manifestPath, this.emi_config, this); 
+        this.config = merge(defConfig, this.config , outConfig);
+ 
+    }
+    
+
+    setOutput() {
+        var config = this.config;
+        var output = Object.assign({} ,this.config.output);
+        output.path = this._outpath(); 
+
         if (!output.filename) {
-            output.filename = this._join(this._prefixPath(), this._filename());
+            output.filename = this._filename();
         }
         if (!output.publicPath) {
             output.publicPath = this._publicPath();
         }
         output.library = "__lib__[name]__";
-        this.config.output  = output;
+        config.output  = output;
         return this;
     }
 
-    resolveHandle() {
-        var resolve = this.config.resolve; 
-        var modules = resolve.modules || [];
-        var cmd_nodepath = path.join(__emi__.root, "node_modules");
-        var pro_nodepath = path.join(this.basedir, "node_modules");
-       if (!~modules.indexOf(pro_nodepath)) {
-            modules.push(pro_nodepath);
-        } 
 
-        if (!~modules.indexOf(cmd_nodepath)) {
-            modules.push(cmd_nodepath);
-        } 
-        resolve.modules = modules;
-        return this;
-    }
 
-    pluginHandle() {
+    setPlugins() {
         var outpath = this._outpath();
-        if (this.env === "dev") {
-            this.dll.manifestPath = "/dll/[name]-manifest.json"; //缓存
-            this.config.plugins = [
-                 new webpack.DllPlugin({
-                    path: path.join(outpath, "/dll/[name]-manifest.json"),
-                    name: "__lib__[name]__",
-                    context: this.basedir
-                }),
-                this._dllInfoTofile({path : outpath })
-            ];
-        } else {
-
-            var dllManifestPath = path.join(outpath, "/dll/[name]-manifest.json");
-            this.dll.manifestPath = "/dll/[name]-manifest.json"; //缓存
-
-            this.config.plugins = [
-                new webpack.DefinePlugin({
-                    'process.env': {
-                        'NODE_ENV': JSON.stringify('production')
-                    }
-                }),
-                new webpack.DllPlugin({
-                    path: dllManifestPath,
-                    name: "__lib__[name]__",
-                    context: this.basedir
-                }),
-                new UglifyJSPlugin(this.emi_config.dllUglify),
-                this._dllInfoTofile({path : outpath })
-            ]
-        }
+        this.config.plugins.push(
+            this._dllInfoTofile({path : outpath })
+        ); 
         return this;
         
     }
 
     _dllInfoTofile(options) {
-        var fs = __emi__.fs;
         var dll = this.dll;
         return function () {
+            var fs = __emi__.fs || require('fs');
             this.plugin("emit", function (compilation, callback) {
                 var chunks = compilation.namedChunks;
                 var dll_files_info = {};
-                var firstname ;
                 Object.keys(chunks).forEach(function (name) {
-                    if (!firstname ) {
-                        firstname = name; 
-                    }
                     dll_files_info[name] = chunks[name].files;
+                    dll.files.push({ name : name, file : dll.manifestPath.replace(/\[name\]-manifest\.json$/, name + "-manifest.json")});
                 });
                 var dllFilesPath = path.join(options.path, "/dll/files.json"); 
-                var fp = "/dll/files.json";
+                var fp = "dll/files.json";
                 fs.writeFileSync(dllFilesPath, JSON.stringify(dll_files_info));
+                dll.filesPath  = fp;
                 log.debug("write dll files info to :", dllFilesPath);
-                dll.manifestPath = dll.manifestPath.replace(/\[name\]-manifest\.json$/, firstname + "-manifest.json");
-                dll.filesPath  = fp ;
                 callback();
             });
+        }
+    }
+
+
+    _filename() {
+        if (this.env === "dev") {
+            return "scripts/[name].js";
+        } else {
+            return "scripts/[name].[chunkhash].js";
         }
     }
 
@@ -115,11 +123,8 @@ class DllFactory  extends ConfigFactory {
         return this.dll;    
     }
 
+
     getConfig () {
-        this.entryHandle()
-            .outHandle()
-            .resolveHandle()
-            .pluginHandle();
         return this.config;
     }
 

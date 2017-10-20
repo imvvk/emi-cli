@@ -1,10 +1,13 @@
-# qzz/fekit/grunt
+
+
 /dev/
 /prd/
 /refs/
 /.ver/
 /.build/
 /build/
+
+
 
 /node_modules/
 #sync.json

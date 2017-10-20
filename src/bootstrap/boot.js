@@ -16,7 +16,6 @@ program
     .option('-d, --debug', 'print debug log')
     .option('-D, --detail', 'print debug and error detail log')
     .option('-t, --type <type>', 'project type: one of react|react-redux|es6|vue|normal|empty', /^(react|react-redux|es6|vue|normal|empty)$/, 'normal')
-    .option('-M, --memory', 'watch in memory')
     .option('--dir', 'clear dir dev or dist ', 'dev')
     .option('--no-color', 'disable log color')
     .option('--log-time', 'display log time')
@@ -71,8 +70,7 @@ program
         __emi__.env = "dev";
         var config = require("./config.js");
         if(config.load()) {
-            var isMemory = program.memory;
-            command.watch.exec(isMemory); 
+            command.watch.exec(); 
         }
     });
 
@@ -82,6 +80,7 @@ program
     .description('pack project not  uglify like development')
     .action(function(){
         __emi__.env = "dev";
+        process.env.NODE_ENV = 'development';
         var config = require("./config.js");
         if(config.load()) {
             command.pack.exec(); 
@@ -94,6 +93,7 @@ program
     .description('min project like production ')
     .action(function(name){
         __emi__.env = "prd";
+        process.env.NODE_ENV = 'production';
         var config = require("./config.js");
         if (config.load()) {
             command.pack.exec(true); 
@@ -108,6 +108,16 @@ program
         if (config.load()) {
             var dir = program.dir;
             command.clean.exec(dir); 
+        }
+    });
+
+program
+    .command('config')
+    .description('show project emi.config.js content')
+    .action(function(name){
+        var config = require("./config.js");
+        if (config.load()) {
+            console.log(config.getProject().config);
         }
     });
 
