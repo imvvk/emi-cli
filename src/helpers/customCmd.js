@@ -7,8 +7,13 @@ var cmdList = [];
 
 
 module.exports = createCmd;
+/**
+ * parent process kill -9 
+process.on('SIGINT', function(){
+    end();
+});
 
-process.on('close', function(){
+process.on('SIGTERM', function(){
     end();
 });
 
@@ -24,14 +29,15 @@ function end() {
     log.info('stop common list ... ');
 
     cmdList.forEach((proc) => {
-        proc.exit();
+        proc.kill();
     });
-
     ended = true;
     cmdList = [];
-    log.info('stop common success ... ');
+    log.info('stop common success');
 
 }
+
+***/
 
 
 function createCmd(cmd, cb) {

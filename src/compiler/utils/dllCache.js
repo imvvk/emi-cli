@@ -5,24 +5,24 @@ var path = require("path");
 var outpath = require("../webpack/base.js").outpath;
 
 var TMP = ".emi_cache";
-var DLL_CACHE_NAME = "./dll.json";
+var DLL_CACHE_NAME =  {  prd : "./dll.json", dev : "./dev_dll.json" };
 
-module.exports.writeToCache = function writeToCache(basedir, data) {
+module.exports.writeToCache = function writeToCache(basedir, env, data) {
     var p = path.join(basedir, TMP)
     log.info('write dll info to cache ...');
     if (!fs.existsSync(p)) {
         fs.mkdirSync(p);
     }
-    if (fs.existsSync(path.join(basedir, TMP, DLL_CACHE_NAME))) {
-        fs.unlinkSync(path.join(basedir, TMP, DLL_CACHE_NAME));
+    if (fs.existsSync(path.join(basedir, TMP, DLL_CACHE_NAME[env]))) {
+        fs.unlinkSync(path.join(basedir, TMP, DLL_CACHE_NAME[env]));
     }
     var str = JSON.stringify(data);
-    fs.writeFileSync(path.join(basedir, TMP, DLL_CACHE_NAME ), str);
+    fs.writeFileSync(path.join(basedir, TMP, DLL_CACHE_NAME[env]), str);
     log.info('write dll info to cache success');
 }
 
 module.exports.checkCache = function checkCache (library, basedir, env) {
-    var dllCache = getDllCacheData(basedir);
+    var dllCache = getDllCacheData(basedir, env);
     if (dllCache) {
         var cacheLibStr = dllCache.libraryStr;
         var output = outpath(basedir, env);
@@ -87,12 +87,12 @@ module.exports.recoverDll = function (basedir, env) {
   log.info('copy cache dir to build path success ');
 }
 
-function getDllCacheData(basedir) {
+function getDllCacheData(basedir, env) {
     if (!fs.existsSync(path.join(basedir, TMP))) {
         return; 
     }
     try {
-        var data = fs.readFileSync(path.join(basedir, TMP, DLL_CACHE_NAME));
+        var data = fs.readFileSync(path.join(basedir, TMP, DLL_CACHE_NAME[env]));
         if (!data) {
             return ;
         }

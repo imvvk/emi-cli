@@ -94,7 +94,6 @@ function loadConfig() {
             //content = fs.readFileSync(path.join(p, "./emi.config.js"), "utf-8");
             //var configjs = path.join(p, "./emi.config.js");
             var cwd = path.parse(configjs).dir;
-            console.log(cwd, __emi__.cwd);
             if (cwd != __emi__.cwd) {
                 process.chdir(cwd);
                 __emi__.cwd = cwd;

@@ -56,7 +56,7 @@ module.exports = function (env) {
                 var dllInfo =  data.dll.getBuildDllInfo();
                 var library = pc.config.library;
                 dllInfo.libraryStr = JSON.stringify(library);
-                dllCache.writeToCache(__emi__.cwd, dllInfo);
+                dllCache.writeToCache(__emi__.cwd, env ,dllInfo);
             }
             log.info("build end:",time2, " spend time:", time2 - time);
         });
