@@ -29,7 +29,8 @@ module.exports = function () {
 
     var compiler =  webpack.getInstance(pc.config, __emi__.cwd, 'dev').then(function (data) {
         var compiler = data.webpack; 
-        watching = compiler.watch({
+        watching = compiler.watch(pc.config.watchOptions || {
+            aggregateTimeout: 300 
         }, (err, stats) => {
             if (err) {
                 console.log(err);

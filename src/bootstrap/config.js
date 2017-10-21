@@ -13,8 +13,7 @@ var DEFAULT_HTML_MODE = "inject" // inject or replace;
 
 var DEFAULT_CONFIG = {
     minify : true,  //是否最压缩 
-    commonPack : true, // 是否加入 公共包
-    packCss : false //
+    commonPack : true // 是否加入 公共包
 }
 
 

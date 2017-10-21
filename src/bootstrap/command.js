@@ -24,17 +24,20 @@ module.exports = {
                     fse.copySync(template_path, project_path); 
                     download.replaceProjectName(project_path, projectName);
                     log.info("copy template [" +template+ "] to project " +  projectName +  " end !");
+                    npmInstall(project_path);
                 } else {
                     var files = fs.readdirSync(project_path);
                     if (!files.length) {
                         fse.copySync(template_path, project_path); 
                         log.info("copy template [" +template+ "] to project " +  projectName +  " end !");
+                        npmInstall(project_path);
                     } else {
                         inquirer.prompt([{ type :"confirm", "name" : "user_input", message : "project path not empty,  continue ?"}]).then(function (answers) {
                             if (answers.user_input) {
                                 fse.copySync(template_path, project_path); 
                                 download.replaceProjectName(project_path, projectName);
                                 log.info("copy template [" +template+ "] to project " +  projectName +  " end !");
+                                npmInstall(project_path);
                             } else {
                                 log.info("user cancel");
                             }
@@ -108,21 +111,7 @@ module.exports = {
                     });
                 }
             });
-            function npmInstall(project_path) {
-                var args = [ 'cd', project_path,  '&&', 'npm', 'install'];
-                var registry = envConfig.get("registry");
-                if (registry) {
-                    args.push('--registry='+ registry);
-                }
-                log.info("start npm install .....");
-                var proc = customCmd(args.join(' '), function (data) {
-                    if (data === 0) {
-                        log.info("start npm install successed");
-                    } else {
-                        log.error("start npm install error");
-                    }
-                });
-            }
+          
         }
 
       
@@ -177,4 +166,21 @@ module.exports = {
         } 
     }
 
+}
+
+
+function npmInstall(project_path) {
+    var args = [ 'cd', project_path,  '&&', 'npm', 'install'];
+    var registry = envConfig.get("registry");
+    if (registry) {
+        args.push('--registry='+ registry);
+    }
+    log.info("start npm install .....");
+    var proc = customCmd(args.join(' '), function (data) {
+        if (data === 0) {
+            log.info("start npm install successed");
+        } else {
+            log.error("start npm install error");
+        }
+    });
 }

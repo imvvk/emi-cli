@@ -58,7 +58,8 @@ Server.prototype = {
                 var compiler = data.webpack;
                 var webpackConfig = data.config;
                 var publicPath = webpackConfig.output.publicPath || '/';
-                        //static middleware
+                
+                //static middleware
                 app.use(static(__emi__.cwd, pc.config, publicPath));
 
                 //单页面APP 中间件
@@ -66,7 +67,6 @@ Server.prototype = {
                     if (pc.config.historyApi === true) {
                         pc.config.historyApi = {}; 
                     }
-                    pc.config.historyApi.logger = logger.debug;
                     app.use(require('connect-history-api-fallback')(pc.config.historyApi))
                 }
 

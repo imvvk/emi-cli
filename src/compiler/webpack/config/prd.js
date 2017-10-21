@@ -63,7 +63,7 @@ module.exports = function (outpath, emiConfig) {
         });
     }
 
-    if (emiConfig.commonPack) {
+    if (Object.keys(emiConfig.entry).length > 1 && emiConfig.commonPack) {
         config.plugins[1] =  new ExtractTextPlugin({
             filename : 'styles/[name].[contenthash:8].css',
             allChunks : true

@@ -1,5 +1,6 @@
 
 var webpack = require('webpack')
+var path = require('path');
 var FriendlyErrorsPlugin = require('friendly-errors-webpack-plugin')
 
 var os = require("os");
@@ -7,6 +8,7 @@ var HappyPack = require('happypack');
 var happyThreadPool = HappyPack.ThreadPool({ size: os.cpus().length });
 
 var cssLoader = require('../../utils/cssLoaders.js');
+var ExtractTextPlugin = require("extract-text-webpack-plugin");
 
 module.exports = function (outpath, emiConfig) {
 
