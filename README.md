@@ -65,7 +65,7 @@ emi pack  // 对当前项目进行编译 单是不进行minify 到dev 目录
 4.watch 模式
 
 ```
-emi watch  //对当前项目进行watch 如果文件发生改变 编译到 dev 目录
+emi watch  //对当前项目进行watch 如果文件发生改变 编译到 dev 目录 可以用作 library module 开发
 ```
 
 
@@ -84,7 +84,19 @@ emi set name value //想.emirc 设置变量  name=value   一般是用来设置g
 emi clean 
 ```
 
+7.安装git 组件
 
+```
+emi install gitpath
+emi install -c short_gitpath
+example:
+emi install miui_ad_fe_component/search-table
+emi install -c search-table
+```
+
+
+
+PS:
 
 开发模式(dev)是 start 是启动http server调试     watch 模式（dev） 打包目录是dev    生产环境是 prd  打包目录是 dist 
 
@@ -155,7 +167,7 @@ emi clean
 
 - minify  是否压缩代码  编译公共模块时可能不需要压缩代码
 
--  analyze      false/true/Object     ture 或 object 生产环境编译完后显示 report.html 配置参考： webpack-bundle-analyzer
+- analyze      false/true/Object     ture 或 object 生产环境编译完后显示 report.html 配置参考： webpack-bundle-analyzer
 
 - openBrowser   String  开发模式下 指定server 启动后 默认打开的浏览器链接 
 
@@ -186,15 +198,14 @@ emi clean
   }
   ```
 
--   dllDevConfig  {Function}  dll 的dev 开发模式的 webpack 配置  优先级最高  需要返回 一个webpack 配置
+- dllDevConfig  {Function}  dll 的dev 开发模式的 webpack 配置  优先级最高  需要返回 一个webpack 配置
 
--   dllPrdConfig {Function} dll 的prd 生产环境 webpack 配置  优先级最高  需要返回 一个webpack 配置
+- dllPrdConfig {Function} dll 的prd 生产环境 webpack 配置  优先级最高  需要返回 一个webpack 配置
 
--   devConfig {Function}  项目中的 dev 开发模式的 webpack 配置  优先级最高  需要返回 一个webpack 配置
+- devConfig {Function}  项目中的 dev 开发模式的 webpack 配置  优先级最高  需要返回 一个webpack 配置
 
--   prdConfig {Function}  项目中的 dev 开发模式的 webpack 配置  优先级最高  需要返回 一个webpack 配置
+- prdConfig {Function}  项目中的 dev 开发模式的 webpack 配置  优先级最高  需要返回 一个webpack 配置
 
-    
 
   ```
   var path = require('path');

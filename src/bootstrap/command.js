@@ -55,22 +55,6 @@ module.exports = {
     initGit :{
         exec :  function (template, projectName) {
             var emirc_path = path.resolve(process.env.HOME || process.env.USERPROFILE, '.emi_cache');
-            /**
-            var regx = /^git@|https?:\/\//;
-            var gitpath ;
-            if (template.match(regx))  {
-                gitpath = template;
-            } else{
-                var prefix =envConfig.get("git");
-                if (prefix.match(/^http/) && !prefix.match(/\/$/) && !template.match(/^\//)) {
-                    template = "/"  + template;
-                } 
-                gitpath = envConfig.get("git") + template;    
-            }
-            if (!gitpath.match(/\.git$/)) {
-                gitpath +=".git";
-            }
-            **/
             var checkout = '';
             if (!~template.indexOf('/')) {
                 template = 'miui_ad_fe/'+ template;
@@ -118,6 +102,21 @@ module.exports = {
         }
 
       
+    },
+    install : {
+        exec : function (component, isComponent) {
+            var checkout = '';
+            if (~component.indexOf("#")) {
+                var tmp = template.split('#')
+                component = tmp[0];
+                checkout = tmp[1];
+            }
+            if (!~component.indexOf('/') && isComponent) {
+                component = 'miui_ad_fe_component/'+ component;
+            } 
+
+            download.npmGitInstall(component, {checkout : checkout});
+        }
     },
     server : { 
         exec : function (port) {

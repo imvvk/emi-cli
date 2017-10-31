@@ -16,6 +16,7 @@ program
     .option('-d, --debug', 'print debug log')
     .option('-D, --detail', 'print debug and error detail log')
     .option('-t, --type <type>', 'project type: one of react|react-redux|es6|vue|normal|empty', /^(react|react-redux|es6|vue|normal|empty)$/, 'normal')
+    .option('-c, --component', 'install type is component')
     .option('--dir', 'clear dir dev or dist ', 'dev')
     .option('--no-color', 'disable log color')
     .option('--log-time', 'display log time')
@@ -41,6 +42,15 @@ program
             command.initGit.exec(template, name);
         }
 
+    });
+
+
+program
+    .command('install [component-name] ')
+    .description('install a gitlab component in current project node_module')
+    .action(function(component){
+        var isComponent = program.component;
+        command.install.exec.apply(this, [component, isComponent]);
     });
 
 program
