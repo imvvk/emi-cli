@@ -72,6 +72,9 @@ module.exports = {
             }
             **/
             var checkout = '';
+            if (!~template.indexOf('/')) {
+                template = 'miui_ad_fe/'+ template;
+            }
             log.info("git path is :" + template);
             if (template.indexOf("#") > -1) {
                 var tmp = template.split('#')

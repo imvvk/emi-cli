@@ -48,7 +48,7 @@ class ProjectFactory  extends ConfigFactory {
 
     setEntry () {
         var config = this.config;
-        if (this.env === 'dev') {
+        if (this.env === 'dev' && !__emi__.watching) {
             var entry = config.entry;
             Object.keys(entry).forEach(function (name) {
                 entry[name] = [path.join(__emi__.root, "./src/client/dev-client.js")].concat(entry[name]);

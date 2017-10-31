@@ -27,48 +27,49 @@ module.exports.checkCache = function checkCache (library, basedir, env) {
         var cacheLibStr = dllCache.libraryStr;
         var output = outpath(basedir, env);
         if (JSON.stringify(library) === cacheLibStr) {
-            var files = dllCache.files || [];
-            var isExistDllFilesJson = fs.existsSync(path.join(output, dllCache.filesPath));
-            var isExistFiles = files.some(function (data) {
-                var file = data.file;
-                return fs.existsSync(file);
-            });
 
-            if (isExistDllFilesJson && isExistFiles) {
-                try { 
-                    var dllFilesJson = JSON.parse(fs.readFileSync(path.join(output,dllCache.filesPath)));
+            try { 
+                var files = dllCache.files || [];
+                var isExistDllFilesJson = fs.existsSync(path.join(output, dllCache.filesPath));
+                var isExistFiles = files.some(function (data) {
+                    var file = data.file;
+                    return fs.existsSync(file);
+                });
 
-                    var isExistLibFiles = Object.keys(dllFilesJson).some(function (key) {
-                        var file = dllFilesJson[key][0];
-                        return fs.existsSync(path.join(output, file));
-                    });
+                if (isExistDllFilesJson && isExistFiles) {
+                        var dllFilesJson = JSON.parse(fs.readFileSync(path.join(output,dllCache.filesPath)));
+
+                        var isExistLibFiles = Object.keys(dllFilesJson).some(function (key) {
+                            var file = dllFilesJson[key][0];
+                            return fs.existsSync(path.join(output, file));
+                        });
 
 
-                    if (!isExistLibFiles) {
-                        return false;
-                    }
-                    var buildPath = (env == 'prd' ? 'dist'  : 'dev' );
-                    log.info('detect dll cached');
-                    log.info('remove cache dll dir ...');
-                    fse.removeSync(path.join(basedir, TMP, buildPath));
-                    log.info('remove cache dll dir successed ');
-                    log.info('copy dll dir to cached ... ');
-                    fse.ensureDirSync(path.join(basedir, TMP, buildPath));
-                    fse.ensureDirSync(path.join(basedir, TMP, buildPath, './dll'));
-                    fse.copySync(path.join(output , './dll'), path.join(basedir, TMP, buildPath , './dll'));
+                        if (!isExistLibFiles) {
+                            return false;
+                        }
+                        var buildPath = (env == 'prd' ? 'dist'  : 'dev' );
+                        log.info('detect dll cached');
+                        log.info('remove cache dll dir ...');
+                        fse.removeSync(path.join(basedir, TMP, buildPath));
+                        log.info('remove cache dll dir successed ');
+                        log.info('copy dll dir to cached ... ');
+                        fse.ensureDirSync(path.join(basedir, TMP, buildPath));
+                        fse.ensureDirSync(path.join(basedir, TMP, buildPath, './dll'));
+                        fse.copySync(path.join(output , './dll'), path.join(basedir, TMP, buildPath , './dll'));
 
-                    Object.keys(dllFilesJson).forEach(function (key) {
-                        var file = dllFilesJson[key][0];
-                        var p = path.join(output, file);
-                        fse.copySync(p, path.join(basedir, TMP, buildPath, file));
-                    });
+                        Object.keys(dllFilesJson).forEach(function (key) {
+                            var file = dllFilesJson[key][0];
+                            var p = path.join(output, file);
+                            fse.copySync(p, path.join(basedir, TMP, buildPath, file));
+                        });
 
-                    log.info('copy dll dir to cached successed ');
-                    return true; 
-                } catch (e) {
-                    log.info('parse dll cache info error:', e && e.message);
-                    return false;
+                        log.info('copy dll dir to cached successed ');
+                        return true; 
                 }
+            } catch (e) {
+                log.info('parse dll cache info error:', e && e.message);
+                return false;
             }
 
 

@@ -21,9 +21,14 @@ module.exports = function (outpath, emiConfig) {
                 }
             }),
             new webpack.NoEmitOnErrorsPlugin(),
-            new webpack.HotModuleReplacementPlugin(),
             new FriendlyErrorsPlugin()
         ]
+    }
+
+    if (!__emi__.watching) {
+        config.plugins.push(
+            new webpack.HotModuleReplacementPlugin()
+        );
     }
 
     if (emiConfig.cssLoader) {
@@ -49,8 +54,8 @@ module.exports = function (outpath, emiConfig) {
             config.plugins.push(
                 new ExtractTextPlugin({
                     filename : path.join(outpath, 'styles/[name].css')
-                }
-                ));
+                })
+            );
         }
 
     }

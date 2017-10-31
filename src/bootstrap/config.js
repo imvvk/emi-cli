@@ -8,7 +8,6 @@ var fs = require("fs");
 var path = require("path");
 
 var PROJECTS_CONFIG = {};
-var DEFAULT_HTML_MODE = "inject" // inject or replace;
 
 
 var DEFAULT_CONFIG = {
@@ -125,7 +124,7 @@ function loadConfig() {
         var entry = config.entry;
         var entryHtml = config.entryHtml =  o2a(config.entryHtml);
         var virtualPath = _getVirtualHtmlPath(config, projectPath);
-        var htmlMode = config.htmlMode || DEFAULT_HTML_MODE;
+        var htmlMode = config.htmlMode;
 
         if (htmlMode === "inject") {
             if (!entryHtml) {

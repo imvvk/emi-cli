@@ -26,7 +26,7 @@ module.exports = function () {
     var pc = config.getProject();
     var env = "dev";
     
-
+    __emi__.watching = true;
     var compiler =  webpack.getInstance(pc.config, __emi__.cwd, 'dev').then(function (data) {
         var compiler = data.webpack; 
         watching = compiler.watch(pc.config.watchOptions || {
