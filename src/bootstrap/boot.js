@@ -10,13 +10,14 @@ var command = require("./command.js");
 
 program
     .version(package.version, '-v, --version')
-    .option('-o, --open [open]', 'open in browser, one of: chrome|firefox|safari|opera', /^(chrome|firefox|safari|opera)$/)
-    .option('-p, --port <port>', 'service port', 9000)
+    //.option('-o, --open [open]', 'open in browser, one of: chrome|firefox|safari|opera', /^(chrome|firefox|safari|opera)$/)
+    .option('-p, --port <port>', 'service port')
     .option('-q, --quite', 'webpack compile quiet')
     .option('-d, --debug', 'print debug log')
     .option('-D, --detail', 'print debug and error detail log')
     .option('-t, --type <type>', 'project type: one of react|react-redux|es6|vue|normal|empty', /^(react|react-redux|es6|vue|normal|empty)$/, 'normal')
-    .option('-c, --component', 'install type is component')
+    .option('-C, --component', 'install type is component')
+    .option('-c, --config [path]', 'proxy config')
     .option('--dir', 'clear dir dev or dist ', 'dev')
     .option('--no-color', 'disable log color')
     .option('--log-time', 'display log time')
@@ -67,7 +68,7 @@ program
         
         var config = require("./config.js");
         if(config.load()) {
-            var port = program.port
+            var port = program.port || 9000;
             command.server.exec.apply(this, [port]);
         }
     });
@@ -128,6 +129,19 @@ program
         var config = require("./config.js");
         if (config.load()) {
             console.log(config.getProject().config);
+        }
+    });
+
+program
+    .command('proxy')
+    .description('start http proxy server, default port 1337 , use -p  set other port  ')
+    .action(function(){
+        var port = program.port;
+        var configPath = program.config;
+        if (!configPath) {
+            log.error('config path not found, please set config path use -c  /xxxx.js or --config /xxxxx.js');
+        } else {
+            command.proxy.exec.apply(this, [port, configPath]);
         }
     });
 

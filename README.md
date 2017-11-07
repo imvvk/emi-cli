@@ -33,7 +33,13 @@ git=
 emi init   <template-name> [project-name] 
 example :
 emi init vue demo
+
+# 如果是git 项目 需要先设定 git地址
+# 如下执行 
+# emi set git http://gitxxxxxxx
 emi init xxx/aaaa demo
+
+#拷贝某一分支
 emi init xxx/aaaa#1.0.0 demo
 ```
 
@@ -88,7 +94,8 @@ emi clean
 
 ```
 emi install gitpath
-emi install -c short_gitpath
+emi install -C short_gitpath
+emi install --component short_gitpath
 example:
 emi install miui_ad_fe_component/search-table
 emi install -c search-table
@@ -109,9 +116,9 @@ PS:
 ```
 var cssLoader = {
     extract : {
-        allChunks : true
+        allChunks : true  //快速设置 extract-text-webpack-plugin 配置 为了兼容emi-cli 0.2 以下 建议配置在 prdConfig {Function} 中
     },
-    vue : true,
+    vue : true,  // 指定是vue 项目 css loader 的fallback 使用vue-style-loader  否则 使用style-loader
     happypack : true //使用happypack 进行加速编译 ， 默认为false , 如果为true 外部的 cssLoader 也必须设置happypack : true
     
 }
@@ -136,7 +143,8 @@ module.exports = {
 2.emiUtils.dllReferenceSync 返回一个 DllReferencePlugin 插件， 只是manifest 文件是可以同步从 http:// https://的网络（CDN）读取 ， 也可以从本地文件读取。这样可以重用已经打包好的DLL 文件。
 
 ```
-plugins : [				   emiUtils.dllReferenceSync('http://t3.market.xiaomi.com/download/Custom/libs/dll/vue_elementui-manifest.json')  
+plugins : [				
+    emiUtils.dllReferenceSync('http://t3.market.xiaomi.com/download/Custom/libs/dll/vue_elementui-manifest.json')  
 ],
 ```
 
@@ -211,7 +219,7 @@ plugins : [				   emiUtils.dllReferenceSync('http://t3.market.xiaomi.com/downloa
 
 - analyze      false/true/Object     ture 或 object 生产环境编译完后显示 report.html 配置参考： webpack-bundle-analyzer
 
-- openBrowser   String  开发模式下 指定server 启动后 默认打开的浏览器链接 
+- openBrowser  Boolean or String   开发模式下启动Server服务打开一个页面， 如果是true 默认打开一个 entryHtml的第一个出口文件，  如果是String 打开此链接 如果指配置路径/xxxx 则打开http://127.0.0.1:port/xxxx 
 
 - serverCommonds  Array 数组  指定一些启动server 后要执行的命令 比如 server启动后 再启动一个命令监听element-ui 主题文件的修改 并编译主题
 
@@ -239,6 +247,8 @@ plugins : [				   emiUtils.dllReferenceSync('http://t3.market.xiaomi.com/downloa
       }
   }
   ```
+
+- optimizeCss  Boolean or Object 默认true  生产环境开启样式优化 true 使用默认配置， Object 使用自定义配置 
 
 - dllDevConfig  {Function}  dll 的dev 开发模式的 webpack 配置  优先级最高  需要返回 一个webpack 配置
 
@@ -339,7 +349,6 @@ plugins : [				   emiUtils.dllReferenceSync('http://t3.market.xiaomi.com/downloa
    
     entry : entry,
     
-
     htmlMode : "inject",
 
     entryHtml : entryHtml,
@@ -447,183 +456,6 @@ plugins : [				   emiUtils.dllReferenceSync('http://t3.market.xiaomi.com/downloa
 
 
 
-### 历史版本记录  
-
-> ### usage
->
-
-**emi init   <template-name> [project-name] **
-
-init a project in current path
-
-template is  vue react  normal vue1 empty  or  a git registry  
-
-**emi start** 
-
-start a local server  in port 9000 default
-
-emi start -p  9900
-
-start a local server in port 9900 
-
-**emi pack** 
-
-pack local project  dont minify  development context
-
-**emi build**
-
-build local project  minify   production context
-
-**emi set  name value**
-
-set some key to .emirc
-
-
-
-```
-
-
-var path = require('path');
-
-function resolve (dir) {
-    return path.join(__dirname, './', dir)
-}
-
-//
-
-module.exports = {
-    library : {
-        vendor : [
-          'vue', 'vue-router'
-		]
-    }, 
-    entry : {
-        "main" : "./src/main.js",
-    },
-
-    htmlMode : "inject",
-    //proxy same as vue-cli
-    //后台接口代理
-    proxyTable : {
-    
-    },
-
-    entryHtml : [
-        {
-            filename : "index.html",
-            template : "src/index.html",
-            inject : "body",
-            chunks : ["main"]
-        }
-    ],
-    //historyApi : true, //开启HTML5 historyAPI  server 使用 所有的访问都到index.html 下
-    /**
-     * css Loader 生成器 
-     
-        cssLoader : {
-            sass : {},
-            postcss : {},
-            extract : {
-                allChunks : true
-            },
-            vue : true  
-        },
-    *    
-    **/
-    /**
-     *
-     optimizeCss : {
-        cssProcessorOptions: {
-            discardComments: {removeAll: true},
-            //避免cssnano 重新计算z-index, 引用外部CSS场景使用
-            safe: true
-        }
-      },
-     *  
-     **/
-
-
-
-
-
-    //staticPath : 'static',//不需要转化的静态资源文件 
-  
-    //路径配置 
-    //prefixPath 会增加到 filename 的前面生成物理路径
-    //publicPath 同 output 的 publicPath 虚拟路径 
-    
-    
-    pathMap : {
-        dev : {
-            prefixPath : "static",  
-            publicPath : "",
-        },
-        prd : {
-            prefixPath : "static",
-            publicPath : ""
-        }
-    },
-    
-    resolve: {
-        extensions: ['.js', '.vue', '.json'],
-        modules: [
-            resolve('src'),
-            resolve('node_modules')
-        ],
-        alias: {
-            'vue$': 'vue/dist/vue.common.js',
-            'src': resolve('src'),
-            'assets': resolve('src/assets'),
-            'components': resolve('src/components')
-        }
-    },
-
-    module: {
-        rules: [
-            {
-                test: /\.vue$/,
-                loader: 'vue-loader',
-                options : { 
-                    loaders : emiUtils.cssLoader(
-                        {
-                         extract:true,
-                        }),
-
-                    postcss : [
-                            require('autoprefixer')() 
-                         ]
-                    }
-            },
-            {
-                test: /\.js$/,
-                loader: 'babel-loader',
-                include: [resolve('src')]
-            },
-            {
-                test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
-                loader: 'url-loader',
-                query: {
-                    limit: 10000,
-                    name: 'static/img/[name].[hash:7].[ext]'
-                }
-            },
-            {
-                test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/,
-                loader: 'url-loader',
-                query: {
-                    limit: 10000,
-                    name: 'static/fonts/[name].[hash:7].[ext]'
-                }
-            }
-
-        ]
-    }
-
-}
-```
-
-
-
 #### ChangeLogs
 
 v0.20 add happypack webpack-parallel-uglify  support  
@@ -632,12 +464,13 @@ v0.21 optimizeCss default false. It will add optimizeCss Plugin  if  optimizeCss
 v0.2.12 add extract Object options  
         dev mode  default is not  use  extract
 
+v0.3.0 重构代码
 
+v0.3.3 fix output merge bug ， add read dll reference config (http / file)
+
+v0.3.4 openBrower 优化 ， 增加http proxy 功能  
 
 #### todos:
-
-- test
-- http proxy
+- DEV 模式下 dll 的开发配置 
 - https support …
-- ………..
 

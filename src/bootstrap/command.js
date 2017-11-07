@@ -10,6 +10,7 @@ var download = require("../helpers/download.js");
 var envConfig = require("../helpers/config.js");
 
 var customCmd = require("../helpers/customCmd.js");
+var proxy = require('../proxy/server.js');
 
 module.exports = {
     init : {
@@ -57,7 +58,7 @@ module.exports = {
             var emirc_path = path.resolve(process.env.HOME || process.env.USERPROFILE, '.emi_cache');
             var checkout = '';
             if (!~template.indexOf('/')) {
-                template = 'miui_ad_fe/'+ template;
+                template = 'miui_ad_fe_component/'+ template;
             }
             log.info("git path is :" + template);
             if (template.indexOf("#") > -1) {
@@ -166,6 +167,12 @@ module.exports = {
             envConfig.set(name, value);
             log.info("set .emirc name: " +  name +  " value: " + (value || ""));
 
+        } 
+    },
+
+    proxy : {
+        exec : function (port, configPath) {
+            proxy.start(port, configPath);
         } 
     }
 

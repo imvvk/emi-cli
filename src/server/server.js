@@ -124,7 +124,11 @@ Server.prototype = {
                     // open it in the default browser when server start
                     if (pc.config.openBrowser) {
                         if (typeof pc.config.openBrowser === 'string') {
-                            opn(pc.config.openBrowser); 
+                            if (pc.config.openBrowser.match(/^https?:\/\.\//)) {
+                                opn(pc.config.openBrowser); 
+                            } else {
+                                opn(data.url+ pc.config.openBrowser);
+                            }
                         } else {
                             var entryHtml = pc.entryHtml;
                             if (entryHtml && entryHtml[0] && entryHtml[0].filename) {

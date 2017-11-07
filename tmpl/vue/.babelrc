@@ -1,25 +1,16 @@
 {
-  "presets": [
-    ["es2015", { "modules": false }],
-    "stage-2"
-  ],
-  "plugins": [
-    "transform-object-rest-spread",
-    "transform-runtime",
-    "transform-object-rest-spread",
-    [
-      "component", 
-      [
-        {
-          "libraryName": "element-ui"
+    "presets": [
+        ["es2015", { "modules": false }],
+        "stage-2"
+    ],
+    "plugins": [
+        "transform-object-rest-spread",
+        "transform-runtime"
+    ],
+    "comments": false,
+    "env": {
+        "test": {
+            "plugins": [ "istanbul" ]
         }
-      ]
-    ]
-  ],
-  "comments": false,
-  "env": {
-    "test": {
-      "plugins": [ "istanbul" ]
     }
-  }
 }
