@@ -35,31 +35,36 @@ module.exports = function (env) {
 
     promise.then(function (data) {
         var instance = data.webpack;
-        instance.run(function (err, stats){
-            if (err) {
-                console.log('compile error:', err);
+        if (instance) {
+            instance.run(function (err, stats){
+                if (err) {
+                    console.log('compile error:', err);
+                    var time2 = new Date().getTime();
+                    log.info("build end:",time2, " spend time:", time2 - time);
+                    return; 
+                }
+                if (!program.quite) {
+                    process.stdout.write(stats.toString({
+                        colors: true,
+                        modules: false,
+                        children: false,
+                        chunks: false,
+                        chunkModules: false
+                    }) + '\n\n')
+                } 
+                var time2 = new Date().getTime();
+                if (data.dll) {
+                    var dllInfo =  data.dll.getBuildDllInfo();
+                    var library = pc.config.library;
+                    dllInfo.libraryStr = JSON.stringify(library);
+                    dllCache.writeToCache(__emi__.cwd, env ,dllInfo);
+                }
+                log.info("build end:",time2, " spend time:", time2 - time);
+            });
+        } else {
                 var time2 = new Date().getTime();
                 log.info("build end:",time2, " spend time:", time2 - time);
-                return; 
-            }
-            if (!program.quite) {
-                process.stdout.write(stats.toString({
-                    colors: true,
-                    modules: false,
-                    children: false,
-                    chunks: false,
-                    chunkModules: false
-                }) + '\n\n')
-            } 
-            var time2 = new Date().getTime();
-            if (data.dll) {
-                var dllInfo =  data.dll.getBuildDllInfo();
-                var library = pc.config.library;
-                dllInfo.libraryStr = JSON.stringify(library);
-                dllCache.writeToCache(__emi__.cwd, env ,dllInfo);
-            }
-            log.info("build end:",time2, " spend time:", time2 - time);
-        });
+        }
     }).catch(function (err) {
         console.log('compile error:', err);
         var time2 = new Date().getTime();

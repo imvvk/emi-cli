@@ -100,6 +100,48 @@ PS:
 
 开发模式(dev)是 start 是启动http server调试     watch 模式（dev） 打包目录是dev    生产环境是 prd  打包目录是 dist 
 
+### 内置全局方法 
+
+全局变量 emiUtils
+
+1.emiUtils.cssLoader  创建样式加载器， 主要服务于vue-loader  
+
+```
+var cssLoader = {
+    extract : {
+        allChunks : true
+    },
+    vue : true,
+    happypack : true //使用happypack 进行加速编译 ， 默认为false , 如果为true 外部的 cssLoader 也必须设置happypack : true
+    
+}
+
+module.exports = {
+   cssLoader : cssLoader, //外部CSS SASS LESS 等配置使用 比如 import ${path}/xxx.scss
+   
+   module: {
+      rules: [
+        {
+          test: /\.vue$/,
+          loader: 'vue-loader',
+          options : { 
+            loaders : emiUtils.cssLoader(cssLoader) //vue loader 配置使用， 解析*.vue 文件中的 样式
+          }
+        }
+      ]
+   }
+}
+```
+
+2.emiUtils.dllReferenceSync 返回一个 DllReferencePlugin 插件， 只是manifest 文件是可以同步从 http:// https://的网络（CDN）读取 ， 也可以从本地文件读取。这样可以重用已经打包好的DLL 文件。
+
+```
+plugins : [				   emiUtils.dllReferenceSync('http://t3.market.xiaomi.com/download/Custom/libs/dll/vue_elementui-manifest.json')  
+],
+```
+
+ 
+
 
 
 ### 配置文件说明 : emi.config.js

@@ -78,9 +78,9 @@ class ProjectFactory  extends ConfigFactory {
     }
 
     setOutput() {
-        var output = Object.assign({} ,this.emi_config.output);
+        var output = this.config.output || {};
+        //强制重写为 emi 输出目录  
         output.path = this._outpath(); 
-
         if (!output.filename) {
             output.filename = this._filename();
         }

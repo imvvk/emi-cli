@@ -142,6 +142,7 @@ module.exports = {
     watch : {
         exec : function () {
            log.info ("__emi__ work in path", __emi__.cwd);
+            __emi__.watching = true;
            watch();
         } 
     },

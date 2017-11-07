@@ -79,6 +79,14 @@ function getDllAndWebpackInstance(emiConfig, basedir, env) {
                 }) + '\n\n')
             } 
             try {
+                if (_.isEmpty(emiConfig.entry)){
+                    resolve({
+                        dll : dll,
+                        dllWebpack : dllWebpack,
+                        dllConfig : dllConfig,
+                    });
+                    return;
+                }
                 var project = new Project(emiConfig, basedir, env);
                 var webpackConfig = project.getConfig();   
                 var instance = webpack(webpackConfig);
