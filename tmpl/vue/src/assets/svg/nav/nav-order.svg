@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 21.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="图层_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 14 18" style="enable-background:new 0 0 14 18;" xml:space="preserve">
+<title>订单管理</title>
+<path style="fill:#FFFFFF;" d="M13,18H1c-0.6,0-1-0.4-1-1V1c0-0.6,0.4-1,1-1h7l6,6.1V17C14,17.6,13.6,18,13,18z"/>
+<path style="fill:#BADBFF;" d="M13,18H1c-0.6,0-1-0.4-1-1V1c0-0.6,0.4-1,1-1h7v6h6v11C14,17.6,13.6,18,13,18z"/>
+<rect x="2" y="8" style="fill:#4DA1FF;" width="5" height="2"/>
+<rect x="2" y="12" style="fill:#4DA1FF;" width="9" height="2"/>
+<polygon style="fill:#8FBDF8;" points="14,9 8,6 14,6 "/>
+</svg>
