@@ -10,7 +10,6 @@ var command = require("./command.js");
 
 program
     .version(package.version, '-v, --version')
-    //.option('-o, --open [open]', 'open in browser, one of: chrome|firefox|safari|opera', /^(chrome|firefox|safari|opera)$/)
     .option('-p, --port <port>', 'service port')
     .option('-q, --quite', 'webpack compile quiet')
     .option('-d, --debug', 'print debug log')

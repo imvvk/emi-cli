@@ -1,3 +1,9 @@
+/**
+* @file server.js
+* @brief  简单代理服务器  
+* @author imvvk
+* @date 2017-11-08
+*/
 
 const http =  require('http');
 const https = require('https');
@@ -38,7 +44,11 @@ class Server {
 
     requsetHandler (hostConfig)  {
         var config = parseHostRule(hostConfig);
-        return proxyRequestHandler(config);
+        try {
+            return proxyRequestHandler(config);
+        } catch (e){
+            console.error('http error=>', e);
+        }
     }
 
     connectHandler (config, req, socketRequest, head) {

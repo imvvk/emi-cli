@@ -62,6 +62,7 @@
     "less-loader": "^4.0.3",
     "lodash": "^4.17.4",
     "memory-fs": "^0.4.1",
+    "mime-types": "^2.1.17",
     "mocha": "^4.0.1",
     "node-sass": "^4.5.0",
     "opn": "^5.1.0",
