@@ -1,6 +1,6 @@
 /**
 * @file server.js
-* @brief  简单代理服务器  
+* @brief  nodejs  正向代理服务器  
 * @author imvvk
 * @date 2017-11-08
 */
@@ -16,24 +16,14 @@ const path = require('path');
 const proxyRequestHandler = require('./proxyRequest.js');
 const parseHostRule = require('./parseHostRule.js');
 
-const defaultCert = {
-    key : path.join(__dirname, '../ssl/emi/private.pem'),
-    cert : path.join(__dirname, '../ssl/emi/ca.cer')
-}
 
 class Server {
-    constructor (port, httpsPort) {
+    constructor (port) {
         this.port = port || 1337;
-        this.httpsPort = httpsPort || 1336; 
     }
 
     start (config) {
-        var httpsOpts = {
-            key: fs.readFileSync(defaultCert.key),
-            cert: fs.readFileSync(defaultCert.cert),
-        };
         this.server = http.createServer(this.requsetHandler(config)).listen(this.port);  
-        //this.httpsServer = https.createServer(httpsOpts, this.requsetHandler(config)).listen(this.httpsPort);
         this.server.on('connect', this.connectHandler.bind(this, config));
         this.server.on('listening', ()=>{
             log.info('emi proxy server start :' , 'http://127.0.0.1:'+ this.port);
@@ -52,23 +42,28 @@ class Server {
     }
 
     connectHandler (config, req, socketRequest, head) {
+        console.log('url', req.url);
         const srvUrl = url.parse(`http://${req.url}`);
-        if (config[srvUrl.hostname]) {
-            srvUrl.port = this.httpsPort;
-            srvUrl.hostname = '127.0.0.1';
-        }
-
+        console.log('srvUrl==>', srvUrl.port, srvUrl.hostname);
+        //建立TCP 连接
         const proxySocket = net.connect(srvUrl.port, srvUrl.hostname, () => {
-
             socketRequest.write('HTTP/1.1 200 Connection Established\r\n\r\n');
             proxySocket.write(head);
-            proxySocket.pipe(socketRequest);
+            proxySocket.pipe(socketRequest).on('error', (err)=> {
+                log.error('proxy socket pipe error:',  err.message); 
+            });
+        }).on('lookup', (err) => {
+            if (err) {
+                log.error('proxy socket lookup error:',  err.message); 
+            }
         }).on('error', (e) => {
-            console.log('error=>', e);
+            log.error('proxy socket connect error:', e.message);
             socketRequest.end();
         });
 
-        socketRequest.pipe(proxySocket);
+        socketRequest.pipe(proxySocket).on('error', (error) => {
+            log.error('proxy client socket pipe error:', error.message);
+        });
          
     }
 
@@ -82,7 +77,7 @@ module.exports.start = function start(port, configPath) {
     if (!path.isAbsolute(configPath)) {
         configPath = path.join(process.cwd(),  configPath)
     }
-    console.log(configPath);
+    log.info(configPath);
     server.start(require(configPath));
 }
 

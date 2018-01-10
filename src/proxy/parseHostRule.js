@@ -17,7 +17,7 @@ function parse(hostConfig) {
 
 function parseItem(hostItem) {
     
-    var path = hostItem.path || '/';
+    var path = hostItem.locations || '/';
     var locations = [];
 
     if (_.isPlainObject(path)) {
