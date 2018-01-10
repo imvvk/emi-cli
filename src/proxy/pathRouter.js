@@ -3,6 +3,8 @@ const qs = require('querystring');
 const url = require('url');
 const _ = require('lodash');
 const request = require('request');
+const mime = require('mime-types');
+const fs = require('fs');
 
 
 //nginx reg to node req args
@@ -134,7 +136,7 @@ function fileRequest(location, base, srvUrl, req, res, config) {
     var matched = false;
     var root ;
     if (location.root) { 
-        root = topath.root;
+        root = location.root;
     } else if (location.alias) {
         root = location.alias;
         var reg = _.isRegExp(config.from) ?  config.from : new RegExp('^'+config.from);

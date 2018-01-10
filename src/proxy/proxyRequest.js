@@ -2,7 +2,6 @@
 const _ = require('lodash');
 const request = require('request');
 const url = require('url');
-const mime = require('mime-types');
 const fs = require('fs');
 const path = require('path');
 
