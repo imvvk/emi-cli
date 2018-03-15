@@ -85,12 +85,12 @@ function httpRequest(location, base, srvUrl, req, res, config) {
             topath = pathname.replace(reg, topath);
         }
 
-
         proxyUrl = url.format(Object.assign({}, srvUrl, base , {
             pathname : topath,
             path : topath
         }))
     }
+
     var headers = Object.assign(req.headers, location.headers);
     var jar = request.jar(); 
     if (location.cookies) {

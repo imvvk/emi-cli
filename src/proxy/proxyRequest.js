@@ -75,7 +75,6 @@ function proxyRequestHandler(hostConfig) {
     return function (req, res) {
         const srvUrl = url.parse(req.url);
         var hostname = srvUrl.hostname, pathname = srvUrl.pathname;
-
         if (hostConfig[hostname]) {
             console.log('req url >>: ', req.url);
             let config = hostConfig[hostname];
