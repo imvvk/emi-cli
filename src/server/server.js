@@ -49,6 +49,8 @@ Server.prototype = {
                     throw new Error('端口被占用，请选择其他端口');
                     return;
                 }
+                //开发环境 关闭etag 
+                app.set('etag', false);
                 app.use(favicon(path.join(__dirname, './source/favicon.ico')));
                 app.use('/__source__/', source.bind(this));
                 //proxy middleware
@@ -62,6 +64,11 @@ Server.prototype = {
                 //static middleware
                 app.use(static(__emi__.cwd, pc.config, publicPath));
 
+                app.use((req, res, next)=>{
+                    console.log(req.headers); 
+                    next();
+                })
+
                 //单页面APP 中间件
                 if (pc.config.historyApi) {
                     if (pc.config.historyApi === true) {
@@ -69,6 +76,12 @@ Server.prototype = {
                     }
                     app.use(require('connect-history-api-fallback')(pc.config.historyApi))
                 }
+
+                //热替换 中间件
+                var hotMiddleware = hotWebpackMiddleware(compiler, {
+                    log : () => {} 
+                });
+                app.use(hotMiddleware)
 
                 //webpack dev middleware
                 app.use(webpackDevMiddleware(compiler, {
@@ -83,12 +96,6 @@ Server.prototype = {
                     }
                 }));
     
-
-                //热替换 中间件
-                var hotMiddleware = hotWebpackMiddleware(compiler, {
-                    log : () => {} 
-                });
-                app.use(hotMiddleware)
 
                 var opened = false;
 
@@ -124,7 +131,11 @@ Server.prototype = {
                     // open it in the default browser when server start
                     if (pc.config.openBrowser) {
                         if (typeof pc.config.openBrowser === 'string') {
-                            opn(pc.config.openBrowser); 
+                            if (pc.config.openBrowser.match(/^https?:\/\.\//)) {
+                                opn(pc.config.openBrowser); 
+                            } else {
+                                opn(data.url+ pc.config.openBrowser);
+                            }
                         } else {
                             var entryHtml = pc.entryHtml;
                             if (entryHtml && entryHtml[0] && entryHtml[0].filename) {

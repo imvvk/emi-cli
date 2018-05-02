@@ -12,6 +12,8 @@ var os = require("os");
 var HappyPack = require('happypack');
 var happyThreadPool = HappyPack.ThreadPool({ size: os.cpus().length });
 
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
+
 var cssLoader = require('../../utils/cssLoaders.js');
 
 module.exports = function (outpath, emiConfig) {
@@ -29,22 +31,28 @@ module.exports = function (outpath, emiConfig) {
 
             new ExtractTextPlugin(Object.assign({
                     filename : 'styles/[name].[contenthash:8].css'
-                }, extractOptions )),
-            //去重CSS 
-            new OptimizeCSSPlugin(emiConfig.optimizeCss || {
-                cssProcessorOptions: {
-                    safe: true,
-                    'z-index' : false,
-                    discardComments: {
-                        removeAll: true,
-                    },
-                },
-            }),
-            //生产环境采用 HashId  但体积会大一些 添加模块不会影响 未改变的
-            new webpack.HashedModuleIdsPlugin(emiConfig.HashedModuleIds)
+                }, extractOptions ))
+         
           
         ]
     }
+
+    if (emiConfig.optimizeCss) {
+        //去重CSS 
+        var opts = emiConfig.optimizeCss === true ?  {
+            cssProcessorOptions: {
+                safe: true,
+                'z-index' : false,
+                discardComments: {
+                    removeAll: true,
+                },
+            }
+        } : emiConfig.optimizeCss; 
+        config.plugins.push(new OptimizeCSSPlugin(opts));
+    }
+
+    //生产环境采用 HashId  但体积会大一些 添加模块不会影响 未改变的
+    config.plugins.push(new webpack.HashedModuleIdsPlugin(emiConfig.HashedModuleIds));
 
     if (emiConfig.cssLoader && emiConfig.cssLoader.happypack) {
 
@@ -78,6 +86,7 @@ module.exports = function (outpath, emiConfig) {
     }
 
     if (emiConfig.minify !== false) {
+        /**
         config.plugins.push(new ParallelUglifyPlugin({
             uglifyJS:{
                 output: {
@@ -89,6 +98,20 @@ module.exports = function (outpath, emiConfig) {
                 sourceMap : false
             }
         }));
+         **/
+      config.plugins.push( new UglifyJsPlugin({
+          uglifyOptions: {
+            output: {
+              comments: false
+            },
+            compress: {
+              warnings: false
+            }
+          },
+          sourceMap: false,
+          parallel: true
+        })
+      )
     }
     if (emiConfig.staticPath) {
         config.plugins.push(

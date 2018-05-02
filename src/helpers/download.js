@@ -12,13 +12,20 @@ function getGitUrl(gitpath, options) {
     if (!git.match(/\/$/)) {
         git +="/";
     }
-    var gitUrl = git+gitpath+ '/repository/archive';
-    if (options.checkout) {
-        gitUrl += '?ref='+options.checkout;
+    var gitUrl ;
+    if (~git.indexOf('github')) {
+        var version = 'master';
+        if (options.checkout) {
+            version = options.checkout;
+        }
+        gitUrl = git + gitpath + '/archive/'+version+'.zip'; 
+    } else {
+        gitUrl = git+gitpath+ '/repository/archive';
+        if (options.checkout) {
+            gitUrl += '?ref='+options.checkout;
+        }
     }
-
     return gitUrl;
-
 }
 
 function downloadGit(gitpath, dest, options ,callback) {

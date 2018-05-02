@@ -53,7 +53,7 @@ module.exports = function (outpath, emiConfig) {
         if (emiConfig.cssLoader.packCss) {
             config.plugins.push(
                 new ExtractTextPlugin({
-                    filename : path.join(outpath, 'styles/[name].css')
+                    filename : 'styles/[name].css'
                 })
             );
         }

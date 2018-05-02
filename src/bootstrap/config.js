@@ -12,7 +12,8 @@ var PROJECTS_CONFIG = {};
 
 var DEFAULT_CONFIG = {
     minify : true,  //是否最压缩 
-    commonPack : true // 是否加入 公共包
+    commonPack : true, // 是否加入 公共包,
+    optimizeCss : true //优化CSS 
 }
 
 
