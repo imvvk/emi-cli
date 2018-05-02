@@ -12,6 +12,8 @@ var os = require("os");
 var HappyPack = require('happypack');
 var happyThreadPool = HappyPack.ThreadPool({ size: os.cpus().length });
 
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
+
 var cssLoader = require('../../utils/cssLoaders.js');
 
 module.exports = function (outpath, emiConfig) {
@@ -84,6 +86,7 @@ module.exports = function (outpath, emiConfig) {
     }
 
     if (emiConfig.minify !== false) {
+        /**
         config.plugins.push(new ParallelUglifyPlugin({
             uglifyJS:{
                 output: {
@@ -95,6 +98,20 @@ module.exports = function (outpath, emiConfig) {
                 sourceMap : false
             }
         }));
+         **/
+      config.plugins.push( new UglifyJsPlugin({
+          uglifyOptions: {
+            output: {
+              comments: false
+            },
+            compress: {
+              warnings: false
+            }
+          },
+          sourceMap: false,
+          parallel: true
+        })
+      )
     }
     if (emiConfig.staticPath) {
         config.plugins.push(
