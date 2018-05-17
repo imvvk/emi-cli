@@ -10,7 +10,6 @@ var download = require("../helpers/download.js");
 var envConfig = require("../helpers/config.js");
 
 var customCmd = require("../helpers/customCmd.js");
-var proxy = require('../proxy/server.js');
 
 module.exports = {
     init : {
@@ -167,12 +166,6 @@ module.exports = {
             envConfig.set(name, value);
             log.info("set .emirc name: " +  name +  " value: " + (value || ""));
 
-        } 
-    },
-
-    proxy : {
-        exec : function (port, configPath) {
-            proxy.start(port, configPath);
         } 
     }
 

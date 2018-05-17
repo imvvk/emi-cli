@@ -2,43 +2,7 @@
 var shell = require('shelljs');
 var path = require("path");
 
-var ended = false;
-var cmdList = [];
-
-
 module.exports = createCmd;
-/**
- * parent process kill -9 
-process.on('SIGINT', function(){
-    end();
-});
-
-process.on('SIGTERM', function(){
-    end();
-});
-
-
-
-function end() {
-
-    if (ended || !cmdList.length) {
-        return;
-    }
-
-    
-    log.info('stop common list ... ');
-
-    cmdList.forEach((proc) => {
-        proc.kill();
-    });
-    ended = true;
-    cmdList = [];
-    log.info('stop common success');
-
-}
-
-***/
-
 
 function createCmd(cmd, cb) {
 
@@ -58,6 +22,5 @@ function createCmd(cmd, cb) {
     proc.on("exit", (data) => {
         console.log('exit cmd : ', cmd  );
     });
-    cmdList.push(proc);
     return proc;
 }

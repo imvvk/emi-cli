@@ -1,140 +1,79 @@
 
-var webpack = require('webpack')
 var path = require('path')
-var ParallelUglifyPlugin = require('webpack-parallel-uglify-plugin');
-
-var ExtractTextPlugin = require("extract-text-webpack-plugin");
-var OptimizeCSSPlugin = require('optimize-css-assets-webpack-plugin')
-
-var CopyWebpackPlugin = require("copy-webpack-plugin");
-
-var os = require("os");
-var HappyPack = require('happypack');
-var happyThreadPool = HappyPack.ThreadPool({ size: os.cpus().length });
-
-const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
-
 var cssLoader = require('../../utils/cssLoaders.js');
+var {
+  extractTextPlugin, 
+  optimizeCssPlugin,
+  hashIdPlugin, 
+  uglifyJsPlugin, 
+  copyWebpackPlugin,
+  analyzePlugin,
+  happyPackPlugin
+} = require('../../utils/pluginFuncs.js');
 
 module.exports = function (outpath, emiConfig) {
 
-    var extractOptions = (emiConfig.cssLoader  || { extract : {}}).extract; 
+  var extractOptions = (emiConfig.cssLoader  || { extract : {}}).extract; 
 
-    var config = {
-        devtool : false,
-        plugins : [
-            new webpack.DefinePlugin({
-                'process.env': {
-                    'NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'production')
-                }
-            }),
+  var config = {
+    devtool : false,
+    mode : 'production',
+    plugins :  [],
+  }
 
-            new ExtractTextPlugin(Object.assign({
-                    filename : 'styles/[name].[contenthash:8].css'
-                }, extractOptions ))
-         
-          
-        ]
-    }
+  var plugins = config.plugins;
 
-    if (emiConfig.optimizeCss) {
-        //去重CSS 
-        var opts = emiConfig.optimizeCss === true ?  {
-            cssProcessorOptions: {
-                safe: true,
-                'z-index' : false,
-                discardComments: {
-                    removeAll: true,
-                },
-            }
-        } : emiConfig.optimizeCss; 
-        config.plugins.push(new OptimizeCSSPlugin(opts));
-    }
+  plugins.push(hashIdPlugin(emiConfig.HashedModuleIds));
 
-    //生产环境采用 HashId  但体积会大一些 添加模块不会影响 未改变的
-    config.plugins.push(new webpack.HashedModuleIdsPlugin(emiConfig.HashedModuleIds));
+  if (extractOptions) {
+    plugins.push(extractTextPlugin(Object.assign({
+      filename : 'styles/[name].[contenthash:8].css'
+    }, extractOptions)));
+  }
 
-    if (emiConfig.cssLoader && emiConfig.cssLoader.happypack) {
+  if (emiConfig.optimizeCss) {
+    plugins.push(optimizeCssPlugin(emiConfig.optimizeCss));
+  }
 
-        var loaders = cssLoader.createHappypackLoaders(emiConfig.cssLoader, 'dev');
+  if (emiConfig.cssLoader && emiConfig.cssLoader.happypack) {
+    var loaders = cssLoader.createHappypackLoaders(emiConfig.cssLoader, 'prd');
+    Object.keys(loaders).forEach(function(key) {
+      var _loaders  = loaders[key];
+      plugins.push(key, _loaders);
+    });
+  }
 
-        Object.keys(loaders).forEach(function(key) {
-            var _loaders  = loaders[key];
-            config.plugins.push(
-                new HappyPack({
-                    id : key,
-                    threadPool : happyThreadPool,
-                    loaders :_loaders,
-                    //debug : true
-                })
-            );
-        });
-    }
+  if (Object.keys(emiConfig.entry).length > 1 && emiConfig.commonPack) {
+    config.plugins[1] =  new ExtractTextPlugin({
+      filename : 'styles/[name].[contenthash:8].css',
+      allChunks : true
+    });
 
-    if (Object.keys(emiConfig.entry).length > 1 && emiConfig.commonPack) {
-        config.plugins[1] =  new ExtractTextPlugin({
-            filename : 'styles/[name].[contenthash:8].css',
-            allChunks : true
-        });
+    config.plugins.push(
+      new webpack.optimize.CommonsChunkPlugin({
+        name: '__common__',
+        chunks : Object.keys(emiConfig.entry) 
+      })
+    );
+  }
 
-        config.plugins.push(
-            new webpack.optimize.CommonsChunkPlugin({
-                name: '__common__',
-                chunks : Object.keys(emiConfig.entry) 
-            })
-        );
-    }
+  if (emiConfig.minify !== false) {
+    //plugins.push(uglifyJsPlugin(emiConfig.minify));
+  }
+  if (emiConfig.staticPath) {
+    let opts = typeof emiConfig.staticPath  === 'string' ? {
+      from: path.join(__emi__.cwd, emiConfig.staticPath),
+      to : path.join(outpath , emiConfig.staticPath),
+      ignore: ['.*']
+    } : emiConfig.staticPath;
+    plugins.push(copyWebpackPlugin(opts));
+  }
 
-    if (emiConfig.minify !== false) {
-        /**
-        config.plugins.push(new ParallelUglifyPlugin({
-            uglifyJS:{
-                output: {
-                    comments: false
-                },
-                compress: {
-                    warnings: false
-                },
-                sourceMap : false
-            }
-        }));
-         **/
-      config.plugins.push( new UglifyJsPlugin({
-          uglifyOptions: {
-            output: {
-              comments: false
-            },
-            compress: {
-              warnings: false
-            }
-          },
-          sourceMap: false,
-          parallel: true
-        })
-      )
-    }
-    if (emiConfig.staticPath) {
-        config.plugins.push(
-            new CopyWebpackPlugin([
-                {
-                    from: path.join(__emi__.cwd, emiConfig.staticPath),
-                    to : path.join(outpath , emiConfig.staticPath),
-                    ignore: ['.*']
-                    
-                }
-            ])
-        )
-    }
+  if (emiConfig.analyze) {
+    plugins.push(analyzePlugin(emiConfig.analyze))
+  }
 
-    if (emiConfig.analyze) {
-        if (emiConfig.analyze === true) {
-            emiConfig.analyze = { analyzerMode :  'static'};
-        } 
-        var BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
-        config.plugins.push(new BundleAnalyzerPlugin(emiConfig.analyze))
-    }
-
-    return config;
+  return config;
 
 }
     
