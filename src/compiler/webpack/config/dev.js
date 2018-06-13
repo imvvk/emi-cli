@@ -9,58 +9,76 @@ var happyThreadPool = HappyPack.ThreadPool({ size: os.cpus().length });
 
 var cssLoader = require('../../utils/cssLoaders.js');
 var ExtractTextPlugin = require("extract-text-webpack-plugin");
+var CopyWebpackPlugin = require("copy-webpack-plugin");
 
 module.exports = function (outpath, emiConfig) {
 
-    var config = {
-        devtool : '#cheap-module-eval-source-map',
-        plugins : [
-            new webpack.DefinePlugin({
-                'process.env': {
-                    'NODE_ENV': JSON.stringify('development')
-                }
-            }),
-            new webpack.NoEmitOnErrorsPlugin(),
-            new FriendlyErrorsPlugin()
-        ]
-    }
+  var config = {
+    devtool : '#cheap-module-eval-source-map',
+    plugins : [
+      new webpack.DefinePlugin({
+        'process.env': {
+          'NODE_ENV': JSON.stringify('development')
+        }
+      }),
+      new webpack.NoEmitOnErrorsPlugin(),
+      new FriendlyErrorsPlugin(),
+      new webpack.optimize.ModuleConcatenationPlugin()
 
-    if (!__emi__.watching) {
+    ]
+  }
+
+  if (!__emi__.watching) {
+    config.plugins.push(
+      new webpack.HotModuleReplacementPlugin()
+    );
+  }
+
+  if (emiConfig.cssLoader) {
+    if (emiConfig.cssLoader.happypack) {
+
+      var loaders = cssLoader.createHappypackLoaders(emiConfig.cssLoader, 'dev');
+
+      Object.keys(loaders).forEach(function(key) {
+        var _loaders  = loaders[key];
         config.plugins.push(
-            new webpack.HotModuleReplacementPlugin()
+          new HappyPack({
+            id : key,
+            threadPool : happyThreadPool,
+            loaders :_loaders,
+            debug : true
+          })
         );
+      });
     }
 
-    if (emiConfig.cssLoader) {
-        if (emiConfig.cssLoader.happypack) {
+    if (emiConfig.staticPath) {
+      var opts = typeof emiConfig.staticPath === 'string' ? [
+        {
+          from: path.join(__emi__.cwd, emiConfig.staticPath),
+          to : path.join(outpath , emiConfig.staticPath),
+          ignore: ['.*']
 
-            var loaders = cssLoader.createHappypackLoaders(emiConfig.cssLoader, 'dev');
-
-            Object.keys(loaders).forEach(function(key) {
-                var _loaders  = loaders[key];
-                config.plugins.push(
-                    new HappyPack({
-                        id : key,
-                        threadPool : happyThreadPool,
-                        loaders :_loaders,
-                        debug : true
-                    })
-                );
-            });
         }
-
-
-        if (emiConfig.cssLoader.packCss) {
-            config.plugins.push(
-                new ExtractTextPlugin({
-                    filename : 'styles/[name].css'
-                })
-            );
-        }
-
+      ] :  emiConfig.staticPath; 
+      config.plugins.push(
+        new CopyWebpackPlugin(opts)
+      )
     }
 
-    return config;
+
+    if (emiConfig.cssLoader.packCss) {
+      config.plugins.push(
+        new ExtractTextPlugin({
+          filename : 'styles/[name].css'
+        })
+      );
+    }
+
+  }
+
+
+  return config;
 
 }
-    
+

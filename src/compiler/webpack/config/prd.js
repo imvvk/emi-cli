@@ -1,7 +1,7 @@
 
 var webpack = require('webpack')
 var path = require('path')
-var ParallelUglifyPlugin = require('webpack-parallel-uglify-plugin');
+//var ParallelUglifyPlugin = require('webpack-parallel-uglify-plugin');
 
 var ExtractTextPlugin = require("extract-text-webpack-plugin");
 var OptimizeCSSPlugin = require('optimize-css-assets-webpack-plugin')
@@ -28,13 +28,14 @@ module.exports = function (outpath, emiConfig) {
                     'NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'production')
                 }
             }),
-
-            new ExtractTextPlugin(Object.assign({
-                    filename : 'styles/[name].[contenthash:8].css'
-                }, extractOptions ))
-         
-          
+            new webpack.optimize.ModuleConcatenationPlugin()
         ]
+    }
+
+    if (extractOptions !== false) {
+      config.plugins.push( new ExtractTextPlugin(Object.assign({
+        filename : 'styles/[name].[contenthash:8].css'
+      }, extractOptions ))); 
     }
 
     if (emiConfig.optimizeCss) {
@@ -56,7 +57,7 @@ module.exports = function (outpath, emiConfig) {
 
     if (emiConfig.cssLoader && emiConfig.cssLoader.happypack) {
 
-        var loaders = cssLoader.createHappypackLoaders(emiConfig.cssLoader, 'dev');
+        var loaders = cssLoader.createHappypackLoaders(emiConfig.cssLoader, 'prd');
 
         Object.keys(loaders).forEach(function(key) {
             var _loaders  = loaders[key];
@@ -72,58 +73,63 @@ module.exports = function (outpath, emiConfig) {
     }
 
     if (Object.keys(emiConfig.entry).length > 1 && emiConfig.commonPack) {
-        config.plugins[1] =  new ExtractTextPlugin({
-            filename : 'styles/[name].[contenthash:8].css',
-            allChunks : true
-        });
-
         config.plugins.push(
             new webpack.optimize.CommonsChunkPlugin({
                 name: '__common__',
                 chunks : Object.keys(emiConfig.entry) 
             })
         );
+      var index = config.plugins.findIndex(it => it instanceof ExtractTextPlugin);
+      //如果存在commonPack  ExtractText  建议 allChunks : true
+      if (index > -1) {
+        config.plugins[index] =  new ExtractTextPlugin({
+          filename : 'styles/[name].[contenthash:8].css',
+          allChunks : true
+        });
+      }
     }
 
     if (emiConfig.minify !== false) {
-        /**
-        config.plugins.push(new ParallelUglifyPlugin({
-            uglifyJS:{
-                output: {
-                    comments: false
-                },
-                compress: {
-                    warnings: false
-                },
-                sourceMap : false
-            }
-        }));
-         **/
-      config.plugins.push( new UglifyJsPlugin({
-          uglifyOptions: {
-            output: {
-              comments: false
-            },
-            compress: {
-              warnings: false
-            }
+      var minifyOpts = typeof emiConfig.minify === 'object' ? emiConfig.minify : {
+        parallel : true,
+        uglifyOptions: {
+          output: {
+            comments: false
           },
-          sourceMap: false,
-          parallel: true
-        })
-      )
+          compress: {
+            warnings: false
+          }
+        },
+        sourceMap: false,
+      } 
+      config.plugins.push( new UglifyJsPlugin(minifyOpts));
+      /**
+      var minifyOpts = typeof emiConfig.minify === 'object' ? emiConfig.minify : {
+        uglifyJS: {
+          output: {
+            comments: false
+          },
+          compress: {
+            warnings: false
+          },
+          sourceMap : false 
+        },
+      } 
+      config.plugins.push( new ParallelUglifyPlugin(minifyOpts));
+       **/
     }
     if (emiConfig.staticPath) {
-        config.plugins.push(
-            new CopyWebpackPlugin([
-                {
-                    from: path.join(__emi__.cwd, emiConfig.staticPath),
-                    to : path.join(outpath , emiConfig.staticPath),
-                    ignore: ['.*']
-                    
-                }
-            ])
-        )
+      var opts = typeof emiConfig.staticPath === 'string' ? [
+        {
+          from: path.join(__emi__.cwd, emiConfig.staticPath),
+          to : path.join(outpath , emiConfig.staticPath),
+          ignore: ['.*']
+
+        }
+      ] :  emiConfig.staticPath; 
+      config.plugins.push(
+        new CopyWebpackPlugin(opts)
+      )
     }
 
     if (emiConfig.analyze) {

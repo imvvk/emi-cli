@@ -189,6 +189,20 @@ function createPrdLoaders(options) {
     var loaders = generateLoaders(options, PRD_DEFAULT_CONFIG, sourceMap);
 
     var fallback = options.fallback || (options.vue ? "vue-style-loader" : "style-loader")
+
+    if (options.extract === false) {
+      loaders = extensions.map(function (ext) {
+        var key = CSS_KEY[ext];
+        var loader = loaders[key];
+        loader.splice(0, 0, fallback);
+        return {
+          test: new RegExp('\\.' + ext + '$'),
+          use: loader
+        } 
+      }); 
+      return loaders;
+    }
+
     
     loaders = extensions.map(function (ext) {
         var key = CSS_KEY[ext];
@@ -212,7 +226,20 @@ function createPackLoaders(options) {
     var loaders = generateLoaders(options, DEV_DEFAULT_CONFIG, sourceMap);
 
     var fallback = options.fallback || (options.vue ? "vue-style-loader" : "style-loader")
-    
+
+    if (options.extract === false) {
+      loaders = extensions.map(function (ext) {
+        var key = CSS_KEY[ext];
+        var loader = loaders[key];
+        loader.splice(0, 0, fallback);
+        return {
+          test: new RegExp('\\.' + ext + '$'),
+          use: loader
+        } 
+      }); 
+      return loaders;
+    }
+
     loaders = extensions.map(function (ext) {
         var key = CSS_KEY[ext];
         var loader = loaders[key];

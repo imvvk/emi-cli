@@ -12,7 +12,7 @@ npm install -g emi-cli
 
 需要全局安装， 把公共的编译依赖文件置于全局， 每个项目可以不必单独饮用 。
 
-当前webpack 版本 2.7.0
+当前webpack 版本 3.12.0
 
 安装成功后会在 用户目录（例如 ~/）下建立 .emirc 文件， 里面内容可以设置 registry git 地址 下载模板GIT地址
 
@@ -233,7 +233,7 @@ plugins : [
 
 - htmlMode  ： 'inject'   生成html 的方式 默认是注入 为以后拓展保留属性
 
-- staticPath    静态目录  编译完成后 会将此目录拷贝到 dist 目录  可以放置一些视频 或者大文件
+- staticPath    静态目录  编译完成后 会将此目录拷贝到 dist 目录  可以放置一些视频 或者大文件  ， 使用copy-webpack-plugin ，如果是字符串 是指对于路径， 如果是object 则是copy-webpack-plugin  的配置文件 
 
 - pathMap  快速配置publicPath  的选项 如果output有设定 则用output 的publicPath
 

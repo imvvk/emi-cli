@@ -142,13 +142,14 @@ class ProjectFactory  extends ConfigFactory {
             var _conf = !this._isDev() ? {
                 inject : true , 
                 chunksSortMode: 'dependency',
+                templateParameters : false,
                 minify: {
                     minifyCSS : true,
                     minifyJS : true,
                     removeComments: true,
                     collapseWhitespace: true
                 }
-            } : {inject: true,   chunksSortMode: 'dependency'};
+            } : {inject: true, templateParameters : false,  chunksSortMode: 'dependency'};
 
             var commonPacks = [];
             if (emiConfig.commonPack) {
@@ -227,7 +228,7 @@ class ProjectFactory  extends ConfigFactory {
 
 
     getConfig () {
-        return this.config;      
+      return this.config;      
     }
 }
 
