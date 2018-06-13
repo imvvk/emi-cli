@@ -1,8 +1,8 @@
 
 var webpack = require('webpack')
-var ParallelUglifyPlugin = require('webpack-parallel-uglify-plugin');
+//var ParallelUglifyPlugin = require('webpack-parallel-uglify-plugin');
 
-//var UglifyJSPlugin = require('uglifyjs-webpack-plugin')
+var UglifyJSPlugin = require('uglifyjs-webpack-plugin')
 
 module.exports = function (manifest, emiConfig, instance) {
     var config = {
@@ -19,20 +19,20 @@ module.exports = function (manifest, emiConfig, instance) {
             })
          ]
     }
-    if (emiConfig.minify) {
-        config.plugins.push(
-            new ParallelUglifyPlugin({
-                uglifyJS:{
-                    output: {
-                        comments: false
-                    },
-                    compress: {
-                        warnings: false
-                    },
-                    sourceMap : false
-                }
-            })
-        ); 
+    if (emiConfig.minify !== false) {
+      var minifyOpts = typeof emiConfig.minify === 'object' ? emiConfig.minify : {
+        parallel : true,
+        uglifyOptions: {
+          output: {
+            comments: false
+          },
+          compress: {
+            warnings: false
+          }
+        },
+        sourceMap: false,
+      } 
+      config.plugins.push( new UglifyJsPlugin(minifyOpts));
     }
 
 

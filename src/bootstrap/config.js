@@ -100,7 +100,7 @@ function loadConfig() {
             config = require(configjs);
         } catch(e) {
             log.error("load config fail in ", p );
-            log.error("error : ", e);
+            throw e;
         }
         return config;
     }

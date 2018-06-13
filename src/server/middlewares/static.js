@@ -18,7 +18,7 @@ var path = require('path');
  * @return middleware
  */
 module.exports = function(basedir, config, publicPath) {
-    if (config.staticPath)  {
+    if (config.staticPath && false )  {
         var staticPath =  config.staticPath;
         var reg = new RegExp("^"+path.normalize(publicPath + staticPath));
         var publicReg = new RegExp("^"+ publicPath);

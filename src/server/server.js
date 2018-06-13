@@ -64,11 +64,6 @@ Server.prototype = {
                 //static middleware
                 app.use(static(__emi__.cwd, pc.config, publicPath));
 
-                app.use((req, res, next)=>{
-                    console.log(req.headers); 
-                    next();
-                })
-
                 //单页面APP 中间件
                 if (pc.config.historyApi) {
                     if (pc.config.historyApi === true) {
