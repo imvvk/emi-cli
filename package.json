@@ -71,6 +71,7 @@
     "stylus": "^0.54.5",
     "stylus-loader": "^3.0.2",
     "sync-request": "^4.1.0",
+    "thread-loader": "^1.1.5",
     "uglifyjs-webpack-plugin": "^1.2.7",
     "url-loader": "^1.0.1",
     "vue-style-loader": "^4.1.0",

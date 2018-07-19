@@ -12,7 +12,7 @@ npm install -g emi-cli
 
 需要全局安装， 把公共的编译依赖文件置于全局， 每个项目可以不必单独饮用 。
 
-当前webpack 版本 3.12.0
+当前webpack 4 版本
 
 安装成功后会在 用户目录（例如 ~/）下建立 .emirc 文件， 里面内容可以设置 registry git 地址 下载模板GIT地址
 
