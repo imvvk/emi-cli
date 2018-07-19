@@ -93,13 +93,13 @@ class DllFactory  extends ConfigFactory {
         var dll = this.dll;
         return function () {
             var fs = __emi__.fs || require('fs');
-            this.plugin("emit", function (compilation, callback) {
+            this.hooks.emit.tapAsync("dllInfoTofile", function (compilation, callback, b, c) {
                 var chunks = compilation.namedChunks;
                 var dll_files_info = {};
-                Object.keys(chunks).forEach(function (name) {
-                    dll_files_info[name] = chunks[name].files;
+                for (let name of chunks.keys()) {
+                    dll_files_info[name] = chunks.get(name).files;
                     dll.files.push({ name : name, file : dll.manifestPath.replace(/\[name\]-manifest\.json$/, name + "-manifest.json")});
-                });
+                }
                 var dllFilesPath = path.join(options.path, "/dll/files.json"); 
                 var fp = "dll/files.json";
                 fs.writeFileSync(dllFilesPath, JSON.stringify(dll_files_info));

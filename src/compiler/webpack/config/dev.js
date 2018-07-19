@@ -17,10 +17,12 @@ module.exports = function (outpath, emiConfig) {
 
   var config = {
     devtool : '#cheap-module-eval-source-map',
-    mode : 'development'
+    mode : 'development',
     plugins : [
       new FriendlyErrorsPlugin()
-    ]
+    ],
+    optimization : {
+    }
   }
 
   if (!__emi__.watching) {
@@ -29,23 +31,24 @@ module.exports = function (outpath, emiConfig) {
     );
   }
 
-  if (emiConfig.cssLoader) {
-    if (emiConfig.cssLoader.happypack) {
-      var loaders = cssLoader.createHappypackLoaders(emiConfig.cssLoader, 'dev');
-      Object.keys(loaders).forEach(function(key) {
-        var _loaders  = loaders[key];
-        config.plugins.push(
-          happyPackPlugin(key, _loaders, true); 
-        );
-      });
-    }
+  if (emiConfig.cssLoader && emiConfig.cssLoader.packCss) {
+    config.plugins.push(extractTextPlugin({
+      filename : 'styles/[name].css',
+      chunkFilename : 'styles/[id].css'
+    }));
+  }
 
-    if (emiConfig.cssLoader.packCss) {
-      config.plugins.push(extractTextPlugin({
-        filename : 'styles/[name].css'
-      }));
-    }
 
+  if (emiConfig.staticPath) {
+    var opts = typeof emiConfig.staticPath === 'string' ? [
+      {
+        from: path.join(__emi__.cwd, emiConfig.staticPath),
+        to : path.join(outpath , emiConfig.staticPath),
+        ignore: ['.*']
+
+      }
+    ] :  emiConfig.staticPath; 
+    config.plugins.push( copyWebpackPlugin(opts));
   }
 
   return config;

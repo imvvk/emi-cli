@@ -2,11 +2,12 @@
  * webpack 配置文件基础
  *
  ***/
-var path = require("path");
+const path = require("path");
+const _ = require("lodash");
 
-var WebpackConfigKeys = [ "amd", "bail", "cache", "context", "dependencies", "devServer", "devtool", "entry", "externals", "loader", "module", "name", "node", "output", "performance", "plugins", "profile", "recordsInputPath", "recordsOutputPath", "recordsPath", "resolve", "resolveLoader", "stats", "target", "watch", "watchOptions"];
+const WebpackConfigKeys = [ "amd", "bail", "cache", "context", "dependencies", "devServer", "devtool", "entry", "externals", "loader", "mode", "module", "name", "node", "output", "optimization", "performance", "plugins", "profile", "recordsInputPath", "recordsOutputPath", "recordsPath", "resolve", "resolveLoader", "stats", "target", "watch", "watchOptions"];
 
-var OUTPUT =  {"dev": "dev", "prd" : "dist"};
+const OUTPUT =  {"dev": "dev", "prd" : "dist"};
 
 
 //基础解析方法
@@ -69,7 +70,7 @@ class ConfigFactory {
         var pro_nodepath = path.join(__emi__.cwd, "node_modules");
         modules.splice(0, 0, pro_nodepath);
         modules.push(cmd_nodepath);
-        resolve.modules = modules;
+        resolve.modules = _.uniq(modules);
         return this;
     }
 
@@ -85,7 +86,7 @@ class ConfigFactory {
         alias.sass = "sass-loader";
         alias['scss-loader'] = "sass-loader";
         alias.scss = "sass-loader";
-        resolveLoader.modules = modules;
+        resolveLoader.modules = _.uniq(modules);
         resolveLoader.alias = alias;
         return this;
 

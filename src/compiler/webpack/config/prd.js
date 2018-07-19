@@ -1,7 +1,7 @@
 
-var path = require('path')
-var cssLoader = require('../../utils/cssLoaders.js');
-var {
+const path = require('path')
+const cssLoader = require('../../utils/cssLoaders.js');
+const {
   extractTextPlugin, 
   optimizeCssPlugin,
   hashIdPlugin, 
@@ -11,55 +11,43 @@ var {
   happyPackPlugin
 } = require('../../utils/pluginFuncs.js');
 
+
 module.exports = function (outpath, emiConfig) {
 
-  var extractOptions = (emiConfig.cssLoader  || { extract : {}}).extract; 
+  var extractOptions = emiConfig.extractOptions || (emiConfig.cssLoader  || { extract : {}}).extract; 
 
   var config = {
     devtool : false,
     mode : 'production',
     plugins :  [],
+    optimization : {
+      minimizer : []
+    }
   }
+
+  var minimizer = config.optimization.minimizer;
 
   var plugins = config.plugins;
 
+  //压缩代码
+  if (emiConfig.minify !== false) {
+    minimizer.push(uglifyJsPlugin(emiConfig.minify));
+  } else {
+    optimization.minimize = false;
+  }
+
+  //使用HashedModuleIds 
   plugins.push(hashIdPlugin(emiConfig.HashedModuleIds));
 
-  if (extractOptions) {
+  if (extractOptions !== false ) {
     plugins.push(extractTextPlugin(Object.assign({
-      filename : 'styles/[name].[contenthash:8].css'
+      filename : 'styles/[name].[chunkhash].css',
+      chunkFilename : 'styles/[id].[contenthash].css'
     }, extractOptions)));
+    minimizer.push(optimizeCssPlugin(emiConfig.optimizeCss));
   }
-
-  if (emiConfig.optimizeCss) {
-    plugins.push(optimizeCssPlugin(emiConfig.optimizeCss));
-  }
-
-  if (emiConfig.cssLoader && emiConfig.cssLoader.happypack) {
-    var loaders = cssLoader.createHappypackLoaders(emiConfig.cssLoader, 'prd');
-    Object.keys(loaders).forEach(function(key) {
-      var _loaders  = loaders[key];
-      plugins.push(key, _loaders);
-    });
-  }
-
-  if (Object.keys(emiConfig.entry).length > 1 && emiConfig.commonPack) {
-    config.plugins[1] =  new ExtractTextPlugin({
-      filename : 'styles/[name].[contenthash:8].css',
-      allChunks : true
-    });
-
-    config.plugins.push(
-      new webpack.optimize.CommonsChunkPlugin({
-        name: '__common__',
-        chunks : Object.keys(emiConfig.entry) 
-      })
-    );
-  }
-
-  if (emiConfig.minify !== false) {
-    //plugins.push(uglifyJsPlugin(emiConfig.minify));
-  }
+    
+  //拷贝静态文件
   if (emiConfig.staticPath) {
     let opts = typeof emiConfig.staticPath  === 'string' ? {
       from: path.join(__emi__.cwd, emiConfig.staticPath),
@@ -68,7 +56,8 @@ module.exports = function (outpath, emiConfig) {
     } : emiConfig.staticPath;
     plugins.push(copyWebpackPlugin(opts));
   }
-
+    
+  //分析打包
   if (emiConfig.analyze) {
     plugins.push(analyzePlugin(emiConfig.analyze))
   }

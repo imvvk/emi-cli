@@ -123,26 +123,10 @@ function loadConfig() {
             return null;
         }
         var entry = config.entry;
-        var entryHtml = config.entryHtml =  o2a(config.entryHtml);
         var virtualPath = _getVirtualHtmlPath(config, projectPath);
-        var htmlMode = config.htmlMode;
-
-        if (htmlMode === "inject") {
-            if (!entryHtml) {
-                log.error("html inject mode but not set entry_html in config");
-            } else {
-                entryHtml = entryHtml.map(function (html){
-                    return {
-                        filename : html.filename,
-                        chunks : html.chunks
-                    } 
-                });
-            }
-        }
 
         var resolved = {
             entry : o2a(entry),
-            entryHtml : entryHtml,
             virtualPath : virtualPath,
             publicPath : _getPublicPath(config),
             config : config,

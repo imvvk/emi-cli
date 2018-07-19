@@ -49,7 +49,9 @@ module.exports = function (env) {
                         modules: false,
                         children: false,
                         chunks: false,
-                        chunkModules: false
+                        chunkModules: false,
+                        errorDetails : false,
+                        error : false
                     }) + '\n\n')
                 } 
                 var time2 = new Date().getTime();

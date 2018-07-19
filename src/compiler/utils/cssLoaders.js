@@ -1,13 +1,16 @@
 /**
- * @file cssLoaders.js
- * @brief 样式Loader 解析工具 解析配置文件中的 cssLoader 配置
- * @author 
- * @version 
- * @date 2017-10-16
- */
+* @file cssLoader.js
+* @brief 根据emi.config.js 中的 cssLoader 生成 样式loaders 并默认加入 thread-loader cache-loader (env: production)
+* @author imvvk
+* @version 
+* @date 2018-07-03
+*/
 
 const _ = require('lodash');
-const ExtractTextPlugin = require("extract-text-webpack-plugin");
+
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+
+const miniCssLoader = MiniCssExtractPlugin.loader;
 
 const CSS_KEY = {
     "sass" : "sass",
@@ -19,9 +22,10 @@ const CSS_KEY = {
 };
 
 
+
 const DEV_DEFAULT_CONFIG = {
     css : {
-        minimize: false
+      //minimize: false
     },
     sass :  {
         indentedSyntax : true
@@ -33,11 +37,11 @@ const DEV_DEFAULT_CONFIG = {
 }
 
 const PRD_DEFAULT_CONFIG = {
-    css : {
-        minimize: true 
+   css : {
+     //minimize: true  // use optimizeCssPlugin do in webpack 4
     },
     sass :  {
-        indentedSyntax : true 
+      indentedSyntax : true
     },
     scss : {},
     less : {},
@@ -47,90 +51,21 @@ const PRD_DEFAULT_CONFIG = {
 
 
 
-module.exports = createCssLoader;
-
-module.exports.cssLoader = function (options) {
-    var loaders = createCssLoader(options);
-    var obj = {};
-    loaders.forEach(function (data) {
-        var key = data.test.toString().replace(/\/\\\.(\w+)\$\//, function (m, n) { 
-            return n;
-        });
-        obj[key] = data.use 
-    })
-    return obj; 
-}
-
-module.exports.createHappypackLoaders = function (options, env) {
-    var sourceMap , defConfig;
-    var opts = Object.assign({}, options, {happypack : true});
-    if (env === 'prd') {
-        sourceMap = false;
-        defConfig = PRD_DEFAULT_CONFIG;
-    } else {
-        sourceMap = true;
-        defConfig = DEV_DEFAULT_CONFIG;
-    }
-
-    return generateLoaders(opts, defConfig, sourceMap);
-
-}
-
-function generateLoaders(options, defConfig, sourceMap) {
-  var extensions = getExtensions(options);
-  var rs = {};
-  extensions.forEach(function (ext) {
-    var key = CSS_KEY[ext];
-    if (options.happypack) {
-      rs[key] = ['happypack/loader?id=' + key ];
-    } else {
-      var cssLoader = {
-        loader: 'css-loader',
-        options: Object.assign(
-          {}, 
-          defConfig.css,
-          {sourceMap : sourceMap},
-          parseOutLoaderOpts('css', options)
-        )
-      }
-
-      var postCssLoader = {
-        loader: 'postcss-loader',
-        options: Object.assign(
-          {}, 
-          defConfig.postcss,
-          {sourceMap : sourceMap},
-          parseOutLoaderOpts('postcss', options)
-        )
-      }
-
-      var loaders = [cssLoader, postCssLoader];
-
-      if(ext !== 'css') {
-        loaders.push({
-          loader : key + '-loader',
-          options : Object.assign({},
-            defConfig[key],
-            { sourceMap : sourceMap },
-            parseOutLoaderOpts(key, options)
-          )
-        });
-      }
-      rs[key] = loaders;
-    }
-  });
-  return rs;
-}
 
 
-function createCssLoader(options, env) {
-
+/**
+ * 生成样式loaders 
+ *
+ * @param {Object} options emi.config cssLoader
+ * @param {String } env dev or prd
+ * @returns {Array} loaders
+ */
+const createCssLoader = (options, env) => {
+  options = options || {};
   if (!env) {
     env = process.env.NODE_ENV === 'production' ? 'prd' : 'dev';
   }
-
-  options = options || {};
-
+  
   if (env === 'prd') {
     return createPrdLoaders(options); 
   } else if (options.packCss) {
@@ -141,7 +76,97 @@ function createCssLoader(options, env) {
 
 }
 
+const createPrdLoaders = (options) => {
+  let loaderObjs = {};
+  let extensions = getExtensions(options);
+  extensions.forEach(generateLoaders(loaderObjs, options, PRD_DEFAULT_CONFIG, false));
 
+  var styleLoader = miniCssLoader;
+
+  var loaders = extensions.map(createLoaderObj(styleLoader, loaderObjs));
+
+  return loaders; 
+}
+
+const createDevLoaders = (options) => {
+  let loaderObjs = {};
+  
+  let extensions = getExtensions(options);
+
+  extensions.forEach(generateLoaders(loaderObjs, options, DEV_DEFAULT_CONFIG, true));
+  
+  var styleLoader = options.vue ? "vue-style-loader" : "style-loader";
+
+  var loaders = extensions.map(createLoaderObj(styleLoader, loaderObjs));
+
+  return loaders;
+}
+
+
+const createPackLoaders = (options) => {
+  
+  let loaderObjs = {};
+
+  let extensions = getExtensions(options);
+
+  extensions.forEach(generateLoaders(loaderObjs, options, DEV_DEFAULT_CONFIG, true));
+
+  var styleLoader = miniCssLoader;
+
+  var loaders = extensions.map(createLoaderObj(styleLoader, loaderObjs));
+
+  return loaders;
+}
+
+const generateLoaders = (rs, options, defConfig, sourceMap) => (ext) => {
+    var key = CSS_KEY[ext];
+    var cssLoader = {
+      loader: 'css-loader',
+      options: Object.assign(
+        {}, 
+        defConfig.css,
+        {sourceMap : sourceMap},
+        parseOutLoaderOpts('css', options)
+      )
+    }
+
+    var postCssLoader = {
+      loader: 'postcss-loader',
+      options: Object.assign(
+        {}, 
+        defConfig.postcss,
+        {sourceMap : sourceMap},
+        parseOutLoaderOpts('postcss', options)
+      )
+    }
+
+    var loaders = [cssLoader, postCssLoader];
+
+    if(ext !== 'css') {
+      var def_config =  defConfig[key] || {}; 
+      loaders.push({
+        loader : key + '-loader',
+        options : Object.assign({},
+          def_config,
+          { sourceMap : sourceMap },
+          parseOutLoaderOpts(key, options)
+        )
+      });
+    }
+    rs[key] = loaders;
+}
+
+const createLoaderObj = (styleLoader, loaderObjs) => (ext) => {
+  var key = CSS_KEY[ext];
+  var loaders = loaderObjs[key];
+  loaders.splice(0, 0, styleLoader);
+
+  return {
+    test: new RegExp('\\.' + ext + '$'),
+    use: loaders
+  } 
+
+}
 
 function getExtensions(options) {
   var exts = options.extension || ["css", "scss", "sass"];
@@ -161,78 +186,6 @@ function getExtensions(options) {
 }
 
 
-function createDevLoaders(options) {
-  var extensions = getExtensions(options);
-  var sourceMap = true;
-  var loaders = generateLoaders(options, DEV_DEFAULT_CONFIG, sourceMap);
-
-  var fallback = options.fallback || (options.vue ? "vue-style-loader" : "style-loader")
-
-  loaders = extensions.map(function (ext) {
-    var key = CSS_KEY[ext];
-    var loader = loaders[key];
-    loader.splice(0, 0, fallback);
-    return {
-      test: new RegExp('\\.' + ext + '$'),
-      use: loader
-    } 
-  });
-
-  return loaders;
-
-}
-
-
-function createPrdLoaders(options) {
-  var extensions = getExtensions(options);
-  var sourceMap = false;
-  var loaders = generateLoaders(options, PRD_DEFAULT_CONFIG, sourceMap);
-
-  var fallback = options.fallback || (options.vue ? "vue-style-loader" : "style-loader")
-
-  loaders = extensions.map(function (ext) {
-    var key = CSS_KEY[ext];
-    var loader = loaders[key];
-
-    return {
-      test: new RegExp('\\.' + ext + '$'),
-      use: ExtractTextPlugin.extract({
-        use: loader,
-        fallback: fallback
-      })
-    } 
-  });
-  return loaders;
-}
-
-
-function createPackLoaders(options) {
-  var extensions = getExtensions(options);
-  var sourceMap = true;
-  var loaders = generateLoaders(options, DEV_DEFAULT_CONFIG, sourceMap);
-
-  var fallback = options.fallback || (options.vue ? "vue-style-loader" : "style-loader")
-
-  loaders = extensions.map(function (ext) {
-    var key = CSS_KEY[ext];
-    var loader = loaders[key];
-
-    return {
-      test: new RegExp('\\.' + ext + '$'),
-      use: ExtractTextPlugin.extract({
-        use: loader,
-        fallback: fallback
-      })
-    } 
-  });
-
-  return loaders;
-
-}
-
-
-
-
 function parseOutLoaderOpts(key, options) {
   var  data = options[key];
   if (_.isPlainObject(data)) {
@@ -244,4 +197,22 @@ function parseOutLoaderOpts(key, options) {
     return {} 
   }
 }
+
+
+
+module.exports = createCssLoader;
+
+module.exports.cssLoader = function (options) {
+    return {};
+    var loaders = createCssLoader(options);
+    var obj = {};
+    loaders.forEach(function (data) {
+        var key = data.test.toString().replace(/\/\\\.(\w+)\$\//, function (m, n) { 
+            return n;
+        });
+        obj[key] = data.use 
+    })
+    return obj; 
+}
+
 

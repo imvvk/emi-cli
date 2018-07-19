@@ -1,17 +1,18 @@
 
-var webpack = require('webpack')
-var ParallelUglifyPlugin = require('webpack-parallel-uglify-plugin');
+const webpack = require('webpack')
 
-//var UglifyJSPlugin = require('uglifyjs-webpack-plugin')
+const {
+  uglifyJsPlugin
+} = require('../../utils/pluginFuncs.js');
 
 module.exports = function (manifest, emiConfig, instance) {
     var config = {
+        devtool : false,
+        mode : 'production',
+        optimization : {
+          minimizer : [uglifyJsPlugin()]
+        },
         plugins : [
-            new webpack.DefinePlugin({
-                'process.env': {
-                    'NODE_ENV': JSON.stringify('production')
-                }
-            }),
             new webpack.DllPlugin({
                 path: manifest,
                 name: "__lib__[name]__",
@@ -19,23 +20,6 @@ module.exports = function (manifest, emiConfig, instance) {
             })
          ]
     }
-    if (emiConfig.minify) {
-        config.plugins.push(
-            new ParallelUglifyPlugin({
-                uglifyJS:{
-                    output: {
-                        comments: false
-                    },
-                    compress: {
-                        warnings: false
-                    },
-                    sourceMap : false
-                }
-            })
-        ); 
-    }
-
-
     return config;
 
 }

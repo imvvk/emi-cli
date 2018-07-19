@@ -7,9 +7,7 @@ function getName(ins) {
     let name = ins.constructor && ins.constructor.name;
     if (name === 'HappyPlugin') {
         return ins.id;
-    } else if (name === 'CommonsChunkPlugin') {
-        return JSON.stringify(ins.chunkNames);
-    }
+    } 
     return name;
 }
 
@@ -41,9 +39,9 @@ var custom = {
         return;
     },
     customizeObject(a, b, key) {
-        if (key === 'output') {
+        if (key === 'output' || key === 'optimization') {
             return _.merge({}, a, b);
-        }
+        } 
         return ;
     }
 }

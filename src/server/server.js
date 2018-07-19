@@ -1,8 +1,11 @@
-
 /**
- * @file developer Server Copy from zdying hiipack
- * 
+ * @file server.js
+ * @brief webpack developer server 
+ * @author imvvk
+ * @version 
+ * @date 2018-07-03
  */
+
 require("colors");
 var express = require('express');
 var path = require('path');
@@ -61,14 +64,6 @@ Server.prototype = {
                 var webpackConfig = data.config;
                 var publicPath = webpackConfig.output.publicPath || '/';
                 
-                //static middleware
-                app.use(static(__emi__.cwd, pc.config, publicPath));
-
-                app.use((req, res, next)=>{
-                    console.log(req.headers); 
-                    next();
-                })
-
                 //单页面APP 中间件
                 if (pc.config.historyApi) {
                     if (pc.config.historyApi === true) {
@@ -88,7 +83,20 @@ Server.prototype = {
                     publicPath : publicPath,
                     noInfo : program.quite,
                     stats: {
-                        colors: true
+                      colors: true,
+                      hash: false,
+                      version: false,
+                      timings: true,
+                      assets: true,
+                      chunks: false,
+                      modules: false,
+                      reasons: false,
+                      children: false,
+                      source: false,
+                      errors: true,
+                      errorDetails: false,
+                      warnings: true,
+                      publicPath: false
                     },
                     quite : program.quite,
                     watchOptions : config.watchOptions || {
@@ -100,17 +108,25 @@ Server.prototype = {
                 var opened = false;
 
 
-                if (pc.config.htmlMode === "inject") {
+                if (pc.config.entryHtml && pc.config.entryHtml.length) {
                     // force page reload when html-webpack-plugin template changes
-                    compiler.plugin('compilation', (compilation) => {
-                        compilation.plugin('html-webpack-plugin-after-emit', function (data, cb) {
-                            hotMiddleware.publish({ action: 'reload' })
-                            cb()
-                        })
-                    });
+                    if (compiler.hooks) {
+                        //webpack 4 support
+                        compiler.hooks.compilation.tap('HtmlWebpackReload', function (compilation) {
+                          compilation.hooks.htmlWebpackPluginAfterEmit.tapAsync('HtmlWebpackReload', function (data, cb) {
+                            hotMiddleware.publish({ action: 'reload' });
+                            cb();
+                          });
+                        });
+                    } else {
+                      compiler.plugin('compilation', (compilation) => {
+                          compilation.plugin('html-webpack-plugin-after-emit', function (data, cb) {
+                              hotMiddleware.publish({ action: 'reload' });
+                              cb();
+                          })
+                      });
+                    }
                 }
-
-          
 
              
                 //文件系统中间件

@@ -1,5 +1,5 @@
 const webpack = require("webpack");
-const ExtractTextPlugin = require("extract-text-webpack-plugin");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const OptimizeCSSPlugin = require("optimize-css-assets-webpack-plugin");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
@@ -9,15 +9,17 @@ var HappyPack = require('happypack');
 var happyThreadPool = HappyPack.ThreadPool({ size: os.cpus().length });
 
 const createPlugin = (Plugin , defOpts) => (options) => {
-  var opts  = typeof opitons === 'object' ? options : defOpts;
-  return new Plugin(defOpts);
+  var opts  = typeof options === 'object' ? options : defOpts;
+  return new Plugin(opts);
 }
 
-const extractTextPlugin = createPlugin(ExtractTextPlugin, {
-  filename : 'styles/[name].[contenthash:8].css'
+const extractTextPlugin = createPlugin(MiniCssExtractPlugin, {
+  filename : 'styles/[name].[contenthash].css', 
+  chunkFilename : 'styles/[id].[contenthash].css'
+
 }) 
 
-const optimizeCssPlugin = createPlugin(optimizeCssPlugin, {
+const optimizeCssPlugin = createPlugin(OptimizeCSSPlugin, {
   cssProcessorOptions: {
     safe: true,
     'z-index' : false,
@@ -29,7 +31,7 @@ const optimizeCssPlugin = createPlugin(optimizeCssPlugin, {
 
 const hashIdPlugin = createPlugin(webpack.HashedModuleIdsPlugin)
 
-const uglifyJsPlugin = uglifyJsPlugin(UglifyJsPlugin, {
+const uglifyJsPlugin = createPlugin(UglifyJsPlugin, {
   uglifyOptions: {
     output: {
       comments: false
@@ -38,6 +40,7 @@ const uglifyJsPlugin = uglifyJsPlugin(UglifyJsPlugin, {
       warnings: false
     }
   },
+  cache : true,
   sourceMap: false,
   parallel: true
 });
@@ -60,7 +63,7 @@ const happyPackPlugin = (id, loaders, debug) => {
 };
 
 
-module.export = {
+module.exports = {
   extractTextPlugin : extractTextPlugin,
   optimizeCssPlugin : optimizeCssPlugin,
   hashIdPlugin : hashIdPlugin,
