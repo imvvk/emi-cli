@@ -11,7 +11,6 @@ const {
   happyPackPlugin
 } = require('../../utils/pluginFuncs.js');
 
-
 module.exports = function (outpath, emiConfig) {
 
   var extractOptions = emiConfig.extractOptions || (emiConfig.cssLoader  || { extract : {}}).extract; 
@@ -26,7 +25,6 @@ module.exports = function (outpath, emiConfig) {
   }
 
   var minimizer = config.optimization.minimizer;
-
   var plugins = config.plugins;
 
   //压缩代码
@@ -61,7 +59,6 @@ module.exports = function (outpath, emiConfig) {
   if (emiConfig.analyze) {
     plugins.push(analyzePlugin(emiConfig.analyze))
   }
-
   return config;
 
 }
