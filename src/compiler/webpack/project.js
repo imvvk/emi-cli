@@ -137,36 +137,43 @@ class ProjectFactory  extends ConfigFactory {
     if (!cacheGroups) {
       cacheGroups = splitChunks.cacheGroups = {};
     }
-    var node_modules_str = /[\\/]node_modules[\\/]/.toString();
-    const hasNodeVendor = Object.keys(cacheGroups).some(key => {
-      var it = cacheGroups[cacheGroups];
-      if (it.test && it.test.toString() === node_modules_str ) {
-        return true;
-      }
-      return false;
-    });
-    if (!hasNodeVendor) {
-      cacheGroups.vendors  = {
-          test: /[\\/]node_modules[\\/]/,
-          chunks : 'all',
-          priority: -10
+    if (this.emi_config.packNodeModules) {
+      var node_modules_str = /[\\/]node_modules[\\/]/.toString();
+      const hasNodeVendor = Object.keys(cacheGroups).some(key => {
+        var it = cacheGroups[cacheGroups];
+        if (it.test && it.test.toString() === node_modules_str ) {
+          return true;
+        }
+        return false;
+      });
+      if (!hasNodeVendor) {
+        cacheGroups.vendors  = {
+            test: /[\\/]node_modules[\\/]/,
+            chunks : 'all',
+            priority: -10
+        }
       }
     }
-
+    return this;
+    /**
+    采用默认配置 
     var entry = this.config.entry;
     Object.keys(entry).forEach(key => {
       var styleName = key + 'Styles';
       if (!cacheGroups[styleName]) {
         cacheGroups[styleName] = {
           name: key,
-          test: (m,c,entry = key) => m.constructor.name === 'CssModule' && recursiveIssuer(m) === entry,
-          chunks: 'all',
+          test: (m,c,entry = key) => { 
+              return   m.constructor.name === 'CssModule' && recursiveIssuer(m) === entry 
+          },
+          chunks: 'async',
           enforce: true
         }
       }
     });
 
     return this;
+     **/
 
   }
 
@@ -182,6 +189,7 @@ class ProjectFactory  extends ConfigFactory {
   }
   setDllPlugin() {
     if (this.emi_config.library) {
+      var publicPath = this.config.output.publicPath || '';
       var dlls = Object.keys(this.emi_config.library);
       var outpath = this.outpath;
       var plugins = this.config.plugins;
@@ -193,7 +201,7 @@ class ProjectFactory  extends ConfigFactory {
         }))
         var seed = this.manifestSeed;
         var assets = Object.keys(dllfiles).map(function (key) {
-          var file = dllfiles[key][0]
+          var file = publicPath + dllfiles[key].join(',')
           seed[key] = file;
           return file;
         });
