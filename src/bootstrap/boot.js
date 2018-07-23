@@ -26,20 +26,16 @@ program
     .option('--grep <grepContent>', 'grep log: debug|access|info|error|warn|detail|<Any other string>');
 
 
+
 program
     .command('init <template-name> [project-name] ')
-    .description('generate a new project from a template')
+    .description('generate a new project from a git')
     .action(function(template, name){
         if (!template) {
-            log.error("template must be set , it can be 'vue|vue1|react|react-redux|normal|empty' or a git path ");
+            log.error("template must be set , it is a git path ");
             return 
         }
-        if (template.match(/^(vue|vue1|react|react-redux|normal|empty)$/)) {
-            command.init.exec(template, name);
-        } else  {
-            command.initGit.exec(template, name);
-        }
-
+        command.initGit.exec(template, name);
     });
 
 
