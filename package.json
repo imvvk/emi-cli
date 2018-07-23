@@ -1,6 +1,6 @@
 {
   "name": "emi-cli",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "a web developer tools for emi ",
   "main": "index.js",
   "scripts": {
@@ -47,6 +47,7 @@
     "file-loader": "^1.1.11",
     "friendly-errors-webpack-plugin": "^1.7.0",
     "happypack": "^5.0.0",
+    "html-webpack-include-assets-plugin": "git+https://github.com/imvvk/html-webpack-include-assets-plugin.git",
     "html-webpack-plugin": "^4.0.0-alpha",
     "http-proxy-middleware": "^0.18.0",
     "inquirer": "^3.0.4",
@@ -80,8 +81,5 @@
     "webpack-hot-middleware": "^2.22.2",
     "webpack-manifest-plugin": "^2.0.2",
     "webpack-merge": "^4.1.2"
-  },
-  "devDependencies": {
-    "html-webpack-include-assets-plugin": "git+https://github.com/imvvk/html-webpack-include-assets-plugin.git"
   }
 }

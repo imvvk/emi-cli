@@ -6,6 +6,7 @@
 /.ver/
 /.build/
 /build/
+package-lock.json
 
 
 
