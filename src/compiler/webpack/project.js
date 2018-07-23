@@ -138,20 +138,22 @@ class ProjectFactory  extends ConfigFactory {
       cacheGroups = splitChunks.cacheGroups = {};
     }
     if (this.emi_config.packNodeModules) {
+      optimization.namedChunks = true;
+      splitChunks.automaticNameDelimiter = '_'; 
       var node_modules_str = /[\\/]node_modules[\\/]/.toString();
       const hasNodeVendor = Object.keys(cacheGroups).some(key => {
         var it = cacheGroups[cacheGroups];
         if (it.test && it.test.toString() === node_modules_str ) {
           return true;
         }
-        return false;
+        return false
       });
       if (!hasNodeVendor) {
-        cacheGroups.vendors  = {
+        cacheGroups.vendor  = {
             test: /[\\/]node_modules[\\/]/,
             chunks : 'all',
             priority: -10
-        }
+       }
       }
     }
     return this;
@@ -228,13 +230,14 @@ class ProjectFactory  extends ConfigFactory {
     if (emiConfig.entryHtml && emiConfig.entryHtml.length) {
       var _conf = !this._isDev() ? {
         inject : true , 
+        includeSiblingChunks : true,
         minify: {
           minifyCSS : true,
           minifyJS : true,
           removeComments: true,
           collapseWhitespace: true
         }
-      } : {inject: true};
+      } : {inject: true, includeSiblingChunks : true};
 
       emiConfig.entryHtml.forEach(function (conf) {
         var a = Object.assign({},_conf, conf);
