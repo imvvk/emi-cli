@@ -47,11 +47,11 @@ module.exports = function (outpath, emiConfig) {
     
   //拷贝静态文件
   if (emiConfig.staticPath) {
-    let opts = typeof emiConfig.staticPath  === 'string' ? {
+    let opts = typeof emiConfig.staticPath  === 'string' ? [{
       from: path.join(__emi__.cwd, emiConfig.staticPath),
       to : path.join(outpath , emiConfig.staticPath),
       ignore: ['.*']
-    } : emiConfig.staticPath;
+    }] : emiConfig.staticPath;
     plugins.push(copyWebpackPlugin(opts));
   }
     
