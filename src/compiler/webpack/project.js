@@ -78,7 +78,7 @@ class ProjectFactory  extends ConfigFactory {
   setCssLoaders() {
     var module = this.config.module,
       plugins = this.config.plugins,
-      options = this.emi_config.cssLoader,
+      options = this.emi_config.cssLoader || {},
       rules = module.rules || [];
 
     var loaders = createCssLoader(options, this.env);
@@ -138,7 +138,9 @@ class ProjectFactory  extends ConfigFactory {
       cacheGroups = splitChunks.cacheGroups = {};
     }
     if (this.emi_config.packNodeModules) {
-      optimization.namedChunks = true;
+      if(this.env ==='prd') {
+        splitChunks.name = false;
+      }
       splitChunks.automaticNameDelimiter = '_'; 
       var node_modules_str = /[\\/]node_modules[\\/]/.toString();
       const hasNodeVendor = Object.keys(cacheGroups).some(key => {

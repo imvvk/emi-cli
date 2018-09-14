@@ -74,7 +74,8 @@ Server.prototype = {
 
                 //热替换 中间件
                 var hotMiddleware = hotWebpackMiddleware(compiler, {
-                    log : () => {} 
+                  log : () => {},
+                  publicPath: webpackConfig.output.publicPath
                 });
                 app.use(hotMiddleware)
 

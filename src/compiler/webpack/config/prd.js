@@ -1,6 +1,7 @@
 
 const path = require('path')
 const cssLoader = require('../../utils/cssLoaders.js');
+
 const {
   extractTextPlugin, 
   optimizeCssPlugin,
@@ -39,7 +40,7 @@ module.exports = function (outpath, emiConfig) {
 
   if (extractOptions !== false ) {
     plugins.push(extractTextPlugin(Object.assign({
-      filename : 'styles/[name].[chunkhash].css',
+      filename : 'styles/[name].[contenthash].css',
       chunkFilename : 'styles/[id].[contenthash].css'
     }, extractOptions)));
     minimizer.push(optimizeCssPlugin(emiConfig.optimizeCss));

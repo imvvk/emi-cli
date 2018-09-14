@@ -1,12 +1,17 @@
 
-var _ = require("lodash");
-var path = require("path");
-var webpack = require("webpack");
-var ConfigFactory = require("./base.js");
+const _ = require("lodash");
+const path = require("path");
+const webpack = require("webpack");
+const ConfigFactory = require("./base.js");
 
-var devConfig = require("./config/dll.dev.js");
-var prdConfig = require("./config/dll.prd.js");
-var merge = require('../utils/merge.js');
+const devConfig = require("./config/dll.dev.js");
+const prdConfig = require("./config/dll.prd.js");
+const merge = require('../utils/merge.js');
+const createCssLoader = require("../utils/cssLoaders.js");
+
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+
+const miniCssLoader = MiniCssExtractPlugin.loader;
 
 
 class DllFactory  extends ConfigFactory {
@@ -36,6 +41,7 @@ class DllFactory  extends ConfigFactory {
 
     setCustom() {
         this.setOutput();
+        this.setCssLoaders();
         this.setResolve();
         this.setResolveLoaders();
         this.setPlugins();
@@ -79,54 +85,72 @@ class DllFactory  extends ConfigFactory {
     }
 
 
+  
+  setCssLoaders() {
+    var module = this.config.module,
+      plugins = this.config.plugins,
+      options = {extension : ['css', 'scss', 'sass', 'less']},
+      rules = module.rules || [];
+    var loaders = createCssLoader(options, this.env);
 
-    setPlugins() {
-        var outpath = this._outpath();
-        this.config.plugins.push(
-            this._dllInfoTofile({path : outpath })
-        ); 
-        return this;
-        
-    }
+    loaders.forEach( it => {
+      var use = it.use;
+      var index = use.indexOf(miniCssLoader);
+    }); 
 
-    _dllInfoTofile(options) {
-        var dll = this.dll;
-        return function () {
-            var fs = __emi__.fs || require('fs');
-            this.hooks.emit.tapAsync("dllInfoTofile", function (compilation, callback, b, c) {
-                var chunks = compilation.namedChunks;
-                var dll_files_info = {};
-                for (let name of chunks.keys()) {
-                    dll_files_info[name] = chunks.get(name).files;
-                    dll.files.push({ name : name, file : dll.manifestPath.replace(/\[name\]-manifest\.json$/, name + "-manifest.json")});
-                }
-                var dllFilesPath = path.join(options.path, "/dll/files.json"); 
-                var fp = "dll/files.json";
-                fs.writeFileSync(dllFilesPath, JSON.stringify(dll_files_info));
-                dll.filesPath  = fp;
-                log.debug("write dll files info to :", dllFilesPath);
-                callback();
-            });
+    module.rules = rules.concat(loaders);
+    return this;
+  }
+
+
+
+  setPlugins() {
+    var outpath = this._outpath();
+    this.config.plugins.push(
+      this._dllInfoTofile({path : outpath })
+    ); 
+    return this;
+
+  }
+
+  _dllInfoTofile(options) {
+    var dll = this.dll;
+    return function () {
+      var fs = __emi__.fs || require('fs');
+      this.hooks.emit.tapAsync("dllInfoTofile", function (compilation, callback, b, c) {
+        var chunks = compilation.namedChunks;
+        var dll_files_info = {};
+        for (let name of chunks.keys()) {
+          dll_files_info[name] = chunks.get(name).files;
+          dll.files.push({ name : name, file : dll.manifestPath.replace(/\[name\]-manifest\.json$/, name + "-manifest.json")});
         }
+        var dllFilesPath = path.join(options.path, "/dll/files.json"); 
+        var fp = "dll/files.json";
+        fs.writeFileSync(dllFilesPath, JSON.stringify(dll_files_info));
+        dll.filesPath  = fp;
+        log.debug("write dll files info to :", dllFilesPath);
+        callback();
+      });
     }
+  }
 
 
-    _filename() {
-        if (this.env === "dev") {
-            return "scripts/[name].js";
-        } else {
-            return "scripts/[name].[chunkhash].js";
-        }
+  _filename() {
+    if (this.env === "dev") {
+      return "scripts/[name].js";
+    } else {
+      return "scripts/[name].[chunkhash].js";
     }
+  }
 
-    getBuildDllInfo () {
-        return this.dll;    
-    }
+  getBuildDllInfo () {
+    return this.dll;    
+  }
 
 
-    getConfig () {
-        return this.config;
-    }
+  getConfig () {
+    return this.config;
+  }
 
 }
 

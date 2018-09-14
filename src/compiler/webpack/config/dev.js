@@ -1,9 +1,9 @@
 
-var webpack = require('webpack')
-var path = require('path');
-var FriendlyErrorsPlugin = require('friendly-errors-webpack-plugin')
-var cssLoader = require('../../utils/cssLoaders.js');
-var {
+const webpack = require('webpack')
+const path = require('path');
+const FriendlyErrorsPlugin = require('friendly-errors-webpack-plugin')
+const cssLoader = require('../../utils/cssLoaders.js');
+const {
   extractTextPlugin, 
   optimizeCssPlugin,
   hashIdPlugin, 
