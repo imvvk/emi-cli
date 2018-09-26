@@ -113,11 +113,10 @@ Server.prototype = {
                     // force page reload when html-webpack-plugin template changes
                     if (compiler.hooks) {
                         //webpack 4 support
-                        compiler.hooks.compilation.tap('HtmlWebpackReload', function (compilation) {
-                          compilation.hooks.htmlWebpackPluginAfterEmit.tapAsync('HtmlWebpackReload', function (data, cb) {
-                            hotMiddleware.publish({ action: 'reload' });
-                            cb();
-                          });
+                        compiler.hooks.compilation.tap('html-webpack-plugin-after-emit', () => {  
+                          hotMiddleware.publish({  
+                            action: 'reload'  
+                          });  
                         });
                     } else {
                       compiler.plugin('compilation', (compilation) => {
