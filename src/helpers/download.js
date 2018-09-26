@@ -67,8 +67,13 @@ function npmGitInstall(gitpath, options) {
     }
     var gitUrl = getGitUrl(gitpath, options); 
     
+    //if (gitUrl.indexOf('http') === 0) {
+        //gitUrl = 'git+'+ gitUrl;
+    //}
+    
     log.info("command : npm install -s "+ gitUrl);
-    var proc = childProcess.exec('npm install -s '+ gitUrl, function(err) {
+    var cmd = 'npm install -s '+ gitUrl;
+    var proc = childProcess.exec('npm i '+ gitUrl , function(err) {
         if (err) {
             console.log(err);
             return;

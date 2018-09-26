@@ -11,7 +11,7 @@ module.exports = function (manifest, emiConfig, instance) {
         devtool : false,
         mode : 'production',
         optimization : {
-          minimizer : [uglifyJsPlugin(), optimizeCssPlugin()]
+          minimizer : [uglifyJsPlugin(emiConfig.minify), optimizeCssPlugin()]
         },
         plugins : [
             new webpack.DllPlugin({

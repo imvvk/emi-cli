@@ -14,16 +14,16 @@ program
     .option('-q, --quite', 'webpack compile quiet')
     .option('-d, --debug', 'print debug log')
     .option('-D, --detail', 'print debug and error detail log')
-    .option('-t, --type <type>', 'project type: one of react|react-redux|es6|vue|normal|empty', /^(react|react-redux|es6|vue|normal|empty)$/, 'normal')
+//.option('-t, --type <type>', 'project type: one of react|react-redux|es6|vue|normal|empty', /^(react|react-redux|es6|vue|normal|empty)$/, 'normal')
     .option('--dir', 'clear dir dev or dist ', 'dev')
-    .option('--no-color', 'disable log color')
-    .option('--log-time', 'display log time')
-    .option('--https', 'start https server')
-    .option('--ssl-key <sslKey>', 'ssl key file')
-    .option('--ssl-cert <sslCert>', 'ssl cert file')
-    .option('--ca-name <caName>', 'CA name, for command: `ssl create-cert`|`ssl create-root-ca`')
-    .option('--sub-domains <subDomains>', 'sub domians, for command: `ssl create-cert`')
-    .option('--grep <grepContent>', 'grep log: debug|access|info|error|warn|detail|<Any other string>');
+//   .option('--no-color', 'disable log color')
+//    .option('--log-time', 'display log time')
+//   .option('--https', 'start https server')
+//.option('--ssl-key <sslKey>', 'ssl key file')
+//   .option('--ssl-cert <sslCert>', 'ssl cert file')
+//    .option('--ca-name <caName>', 'CA name, for command: `ssl create-cert`|`ssl create-root-ca`')
+//    .option('--sub-domains <subDomains>', 'sub domians, for command: `ssl create-cert`')
+//    .option('--grep <grepContent>', 'grep log: debug|access|info|error|warn|detail|<Any other string>');
 
 
 
@@ -45,7 +45,7 @@ program
     .option('-C, --component', 'install type is component')
     .option('-c, --component', 'install type is component')
     .action(function(component){
-        var isComponent = program.component;
+        var isComponent = true;
         command.install.exec.apply(this, [component, isComponent]);
     });
 
@@ -167,6 +167,7 @@ function showHelp() {
     console.log('    $ emi build');
     console.log('    $ emi watch');
     console.log('    $ emi watch --memory');
+    console.log('    $ emi clean --dir dist');
     console.log('');
 
 }
