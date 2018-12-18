@@ -292,7 +292,7 @@ class ProjectFactory  extends ConfigFactory {
               var data = vendorGroup[key];
               var assets = data.assets;
               var files = data.files;
-              assets = _.flatten(assets).map(formatAsset);
+              assets = _.flatten(assets).filter(it => it.match(/\.(js|css)$/)).map(formatAsset);
               plugins.push(new HtmlWebpackIncludeAssetsPlugin({
                 assets: assets,
                 files : files,
