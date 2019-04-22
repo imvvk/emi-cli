@@ -24,7 +24,7 @@ class DllFactory  extends ConfigFactory {
             manifestPath : path.join(this._outpath(), manifest),
             files : []
         };
-        //this.config.plugins = []; //dll 不继承 主plugin
+        this.config.plugins = []; //dll 不继承 主plugin
         this.setEntry();
         this.mergeEnvConfig();
         this.setCustom();
@@ -103,14 +103,12 @@ class DllFactory  extends ConfigFactory {
   }
 
 
-
   setPlugins() {
     var outpath = this._outpath();
     this.config.plugins.push(
       this._dllInfoTofile({path : outpath })
     ); 
     return this;
-
   }
 
   _dllInfoTofile(options) {

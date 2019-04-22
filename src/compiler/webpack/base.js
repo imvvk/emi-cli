@@ -2,12 +2,14 @@
  * webpack 配置文件基础
  *
  ***/
+const fs = require('fs');
 const path = require("path");
 const _ = require("lodash");
 
 const WebpackConfigKeys = [ "amd", "bail", "cache", "context", "dependencies", "devServer", "devtool", "entry", "externals", "loader", "mode", "module", "name", "node", "output", "optimization", "performance", "plugins", "profile", "recordsInputPath", "recordsOutputPath", "recordsPath", "resolve", "resolveLoader", "stats", "target", "watch", "watchOptions"];
 
 const OUTPUT =  {"dev": "dev", "prd" : "dist"};
+
 
 
 //基础解析方法
@@ -37,7 +39,7 @@ class ConfigFactory {
 
         wpconf.context = basedir;
         wpconf.plugins = wpconf.plugins || [];
-        wpconf.module = wpconf.module || {};
+        wpconf.module = wpconf.module || {rules : []};
         wpconf.resolve = wpconf.resolve || {};
         wpconf.resolveLoader = wpconf.resolveLoader || {};
         return wpconf;
@@ -68,7 +70,7 @@ class ConfigFactory {
         var modules = resolve.modules || [];
         var cmd_nodepath = path.join(__emi__.root, "node_modules");
         var pro_nodepath = path.join(__emi__.cwd, "node_modules");
-        modules.splice(0, 0, pro_nodepath);
+        modules.push(pro_nodepath);
         modules.push(cmd_nodepath);
         resolve.modules = _.uniq(modules);
         return this;
@@ -81,7 +83,7 @@ class ConfigFactory {
         var alias = resolveLoader.alias || {};
         var cmd_nodepath = path.join(__emi__.root, "node_modules");
         var pro_nodepath = path.join(__emi__.cwd, "node_modules");
-        modules.splice(0, 0, pro_nodepath);
+        modules.push(pro_nodepath);
         modules.push(cmd_nodepath);
         alias.sass = "sass-loader";
         alias['scss-loader'] = "sass-loader";
@@ -128,6 +130,19 @@ class ConfigFactory {
 
     getConfig () {
         return this.config;
+    }
+
+    isVueProject() {
+      try {
+        let pkgStr = fs.readFileSync(path.join(this.basedir, './package.json'));
+        let pkg = JSON.parse(pkgStr);
+        let dependencies = pkg.dependencies || {};
+        let devDependencies = pkg.devDependencies || {};
+        return dependencies.vue || devDependencies.vue
+      } catch(e) {
+        return false;
+      }
+      
     }
 
 }

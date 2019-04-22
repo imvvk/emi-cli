@@ -2,6 +2,7 @@
 const _ = require("lodash");
 const path = require("path");
 const webpack = require("webpack");
+const log = require('../../helpers/log.js');
 
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const HtmlWebpackIncludeAssetsPlugin = require("html-webpack-include-assets-plugin");
@@ -28,9 +29,13 @@ class ProjectFactory  extends ConfigFactory {
     super(emi_config, basedir, env);
     this.outpath = this._outpath();
     this.manifestSeed = {};
+    this.resolve = (dir) => {
+      return path.join(basedir, './', dir);
+    }
     this.setEntry();
     this.mergeEnvConfig();
     this.setCustom();
+
   }
 
   mergeDev () {
@@ -66,13 +71,116 @@ class ProjectFactory  extends ConfigFactory {
 
   setCustom() {
     this.setOutput();
+    //this.setRules();
     this.setResolve();
     this.setResolveLoaders();
     this.setDllPlugin();
+    this.setLoaders();
     this.setCssLoaders();
     this.setSplitChunks();
     this.setPlugins();
     this.insertHtml();
+  }
+
+  setLoaders() {
+    let module = this.config.module,
+      plugins = this.config.plugins,
+      rules = module.rules || [],
+      hadImgeLoader,
+      hadFontLoader,
+      hadVueLoader,
+      hadJsLoader;
+
+    let checkImg = _check(['.png', '.jpg', '.gif', '.svg'])
+    let checkFont = _check(['.woff2', '.eot', '.ttf', '.otf'])
+    let checkVue = _check(['.vue']);
+    let checkJs = _check(['.js', '.jsx'])
+    
+    rules.forEach(it => {
+      let test = it.test;
+      if(checkImg(test)) {
+        hadImgeLoader = true;
+      } else if(checkFont(test)) {
+        hadFontLoader = true;
+      } else if (checkVue(test)) {
+        hadVueLoader = true; 
+      } else if (checkJs(test)) {
+        hadJsLoader = true;
+      }
+    })
+
+    if(this.isVueProject() && !hadVueLoader) {
+      rules.push({
+        test: /\.vue$/,
+        use: [{loader : 'vue-loader' }],
+        include: [path.join(this.basedir, './src')]
+      })
+    }
+
+    if (!hadJsLoader) {
+      rules.push({
+        test: /\.jsx?$/,
+        use: [{loader: 'babel-loader'}],
+        include: [path.join(this.basedir, './src')]
+      });
+    }
+
+    if (!hadFontLoader) {
+      rules.push({
+        test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/,
+        use: [{
+          loader: 'url-loader',
+          query: {
+            limit: 10000,
+            name: 'static/fonts/[name].[hash:7].[ext]'
+          }
+        }]
+      });
+    }
+    if (!hadImgeLoader) {
+      rules.push({
+        test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
+        use : [{
+          loader: 'url-loader',
+          query: {
+            limit: 10000,
+            name: 'static/img/[name].[hash:7].[ext]'
+          }
+        }]
+      })
+    }
+
+    let parallel = typeof this.emi_config.parallel === 'undefined' ? true :  this.emi_config.parallel;
+    if (parallel) {
+      rules.filter(it  => checkJs(it.test) && checkVue(it.test))
+        .forEach(it => {
+          let use = it.use || it.loader;
+          //loader ： string
+          if (typeof use === 'string') {
+            let obj = {}, tmp = [];
+            let query = it.query;
+            obj.loader = use;
+            if (query) {
+              obj.query = query;
+            }
+            tmp.push(use);
+            it.use = tmp;
+            delete it.loader;
+            delete it.query;
+          }
+          if (Array.isArray(it.use)) {
+            it.use.splice(0, 0 , {loader : 'thread-loader'}); 
+          }
+        });
+    }
+    module.rules  = rules;
+
+
+    function _check(files) {
+      return function (reg) {
+        return files.some(it => it.match(reg));
+      }
+    }
   }
 
   setCssLoaders() {
@@ -86,7 +194,6 @@ class ProjectFactory  extends ConfigFactory {
     //css 代码不extract 出来 和JS 合并一起
     var notExtract = options.extract === false;
 
-    var parallel = !!(this.emi_config.parallel || options.happypack )  //兼容老版本 
     loaders.forEach( it => {
       var use = it.use;
       if (notExtract) {
@@ -94,9 +201,6 @@ class ProjectFactory  extends ConfigFactory {
         if (~index) {
           it.use.splice(index, 1, 'style-loader');
         }
-      }
-      if (parallel) {
-        accelerateLoader(it, plugins);
       }
     }); 
 
@@ -118,8 +222,6 @@ class ProjectFactory  extends ConfigFactory {
     this.config.output  = output;
     return this;
   }
-
-
   /**
    * webpack4 set custom splitChunks
    * such as css split base on entry
@@ -160,30 +262,44 @@ class ProjectFactory  extends ConfigFactory {
     }
     return this;
     /**
-    采用默认配置 
-    var entry = this.config.entry;
-    Object.keys(entry).forEach(key => {
-      var styleName = key + 'Styles';
-      if (!cacheGroups[styleName]) {
-        cacheGroups[styleName] = {
-          name: key,
-          test: (m,c,entry = key) => { 
-              return   m.constructor.name === 'CssModule' && recursiveIssuer(m) === entry 
-          },
-          chunks: 'async',
-          enforce: true
-        }
-      }
-    });
-
-    return this;
-     **/
+    *  采用默认配置 
+    *  var entry = this.config.entry;
+    *  Object.keys(entry).forEach(key => {
+    *    var styleName = key + 'Styles';
+    *    if (!cacheGroups[styleName]) {
+    *      cacheGroups[styleName] = {
+    *        name: key,
+    *        test: (m,c,entry = key) => { 
+    *            return   m.constructor.name === 'CssModule' && recursiveIssuer(m) === entry 
+    *        },
+    *        chunks: 'async',
+    *        enforce: true
+    *      }
+    *    }
+    *  });
+    *
+    * return this;
+    **/
 
   }
 
   setPlugins() {
-    var emiConfig = this.emi_config;
-    var plugins = this.config.plugins;
+    let emi_config = this.emi_config;
+    let plugins = this.config.plugins;
+    if(this.isVueProject()) {
+      let hadVuePlugin = plugins.some(it => it.constructor && it.constructor.name === 'VueLoaderPlugin');
+      if (!hadVuePlugin) {
+        try {
+          let VueLoaderPlugin = require('vue-loader').VueLoaderPlugin;
+          if(VueLoaderPlugin) {
+            plugins.push(new VueLoaderPlugin());
+          }
+        } catch (e) {
+          log.error('add vue plugin error:' + e.message); 
+        }
+      }
+
+    }
     if (this.env !== 'dev') {
       plugins.push(new ManifestPlugin({
         seed : this.manifestSeed
@@ -321,9 +437,43 @@ class ProjectFactory  extends ConfigFactory {
 
   getConfig () {
 
-    //console.log('config===>',JSON.stringify(this.config, null , 2));
     return this.config;      
   }
+}
+/**
+ * 将简写的loader转化为 loaders   用Rule.use表示  
+ *
+ * @param {Object} item loader 对象 { test : //, loader: '', query....}
+ */
+
+function loaderToUseLoaders(item) {
+  let notUse = item.loader && !item.use; 
+  if (notUse) {
+    let loaders = [{
+      loader : item.loader,
+      options : item.query || item.options
+    }];
+    delete item.loader;
+    delete item.query;
+    delete item.options;
+    item.use = loaders;
+  }
+  return item;
+}
+
+/**
+ * 获取loader Name
+ *
+ * @param {Object} item loader item
+ * @returns {String} loader name
+ */
+function getLoaderName(item) {
+  if(typeof item === 'string') {
+    return item;
+  } else if (typeof item === 'object') {
+    return item.loader;
+  } 
+  return '';
 }
 
 

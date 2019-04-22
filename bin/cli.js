@@ -25,7 +25,6 @@ function end () {
         childProc.kill('SIGKILL');
         childProc = null;
     } 
-
     console.log('\b\b  ');
     console.log('emi-cli ended...'.bold.yellow);
 }

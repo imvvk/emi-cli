@@ -52,6 +52,9 @@ Server.prototype = {
                     throw new Error('端口被占用，请选择其他端口');
                     return;
                 }
+                if (pc.config.serverCommonds) {
+                  this.startCustomCmd(pc.config.serverCommonds);
+                }
                 //开发环境 关闭etag 
                 app.set('etag', false);
                 app.use(favicon(path.join(__dirname, './source/favicon.ico')));
@@ -113,10 +116,13 @@ Server.prototype = {
                     // force page reload when html-webpack-plugin template changes
                     if (compiler.hooks) {
                         //webpack 4 support
-                        compiler.hooks.compilation.tap('html-webpack-plugin-after-emit', () => {  
-                          hotMiddleware.publish({  
-                            action: 'reload'  
-                          });  
+                        compiler.hooks.compilation.tap('html-webpack-plugin-after-emit', (data) => {  
+                          //默认关闭html 监听reload 
+                          if (pc.config.reloadHtml) {
+                            hotMiddleware.publish({  
+                              action: 'reload'  
+                            });  
+                          }
                         });
                     } else {
                       compiler.plugin('compilation', (compilation) => {
@@ -163,7 +169,6 @@ Server.prototype = {
                 });
 
             }).then((data) => {
-                this.startCustomCmd(pc.config.serverCommonds);
                 return data;
             });
 

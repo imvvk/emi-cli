@@ -32,7 +32,7 @@ module.exports = function (outpath, emiConfig) {
   if (emiConfig.minify !== false) {
     minimizer.push(uglifyJsPlugin(emiConfig.minify));
   } else {
-    optimization.minimize = false;
+    config.optimization.minimize = false;
   }
 
   //使用HashedModuleIds 
