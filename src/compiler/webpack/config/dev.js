@@ -16,7 +16,7 @@ const {
 module.exports = function (outpath, emiConfig) {
 
   var config = {
-    devtool : 'cheap-module-eval-source-map',
+    devtool : '#cheap-module-eval-source-map',
     mode : 'development',
     plugins : [
       new FriendlyErrorsPlugin()
