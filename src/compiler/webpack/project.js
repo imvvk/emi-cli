@@ -150,23 +150,28 @@ class ProjectFactory  extends ConfigFactory {
       })
     }
 
-    let parallel = typeof this.emi_config.parallel === 'undefined' ? true :  this.emi_config.parallel;
+    let parallel = typeof this.emi_config.parallel === 'undefined' ? false :  this.emi_config.parallel;
     if (parallel) {
-      rules.filter(it  => checkJs(it.test) && checkVue(it.test))
+      rules.filter(it  => !it.enforce && (checkJs(it.test) || checkVue(it.test)))
         .forEach(it => {
           let use = it.use || it.loader;
           //loader ： string
           if (typeof use === 'string') {
             let obj = {}, tmp = [];
             let query = it.query;
+            let options = it.options;
             obj.loader = use;
             if (query) {
               obj.query = query;
+            }
+            if (options) {
+              obj.options = options;
             }
             tmp.push(use);
             it.use = tmp;
             delete it.loader;
             delete it.query;
+            delete it.options;
           }
           if (Array.isArray(it.use)) {
             it.use.splice(0, 0 , {loader : 'thread-loader'}); 
