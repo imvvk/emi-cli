@@ -200,12 +200,11 @@ plugins : [
 
   ```
   cssLoader : {
-    
     extension : ['css', 'scss', 'sass'] //设定要添加的loader less 可以是 ['css', 'less'] 默认是 ['css', 'scss', 'sass'],
     packCss : false / true  //默认false  如果设置为true 开发模式css 则是用extractTextPlugin 进行打包，这样就会没有热刷新功能
     happaypack : false / true //是否用happypack 编译 样式文件
     vue : false ／ true,  //true说明是vue 项目 fallback 使用vue-style-loader 默认是style-loader
-    sass : {ncludePaths : ['xxxx']},  //可以设定自定义的配置
+    sass : {includePaths : ['xxxx']},  //可以设定自定义的配置
     scss : {includePaths : ['xxxx']},
     less : {},
     postcss : {}
