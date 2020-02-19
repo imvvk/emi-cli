@@ -13,17 +13,14 @@ function getGitUrl(gitpath, options) {
         git +="/";
     }
     var gitUrl ;
+    var version = 'master';
+    if (options.checkout) {
+        version = options.checkout;
+    }
     if (~git.indexOf('github')) {
-        var version = 'master';
-        if (options.checkout) {
-            version = options.checkout;
-        }
-        gitUrl = git + gitpath + '/archive/'+version+'.zip'; 
+        gitUrl = git + gitpath + '/archive/'+version+'.zip';
     } else {
-        gitUrl = git+gitpath+ '/repository/archive';
-        if (options.checkout) {
-            gitUrl += '?ref='+options.checkout;
-        }
+        gitUrl = git+gitpath+ `/-/archive/${version}/${gitpath.split('/').pop()}-${version}.zip`;
     }
     return gitUrl;
 }
@@ -31,12 +28,12 @@ function getGitUrl(gitpath, options) {
 function downloadGit(gitpath, dest, options ,callback) {
     if (typeof options === "function") {
         callback = options;
-        options = {}; 
+        options = {};
     }
-    var gitUrl = getGitUrl(gitpath, options); 
+    var gitUrl = getGitUrl(gitpath, options);
     download(gitUrl, dest , { extract: true, strip: 1, mode: '666', headers: { accept: 'application/zip' } }).then(function (err) {
         if (callback) {
-            callback(); 
+            callback();
         }
     }).catch(function (err) {
         console.log(err);
@@ -63,14 +60,14 @@ function replaceProjectName(dest, name, reg) {
 function npmGitInstall(gitpath, options) {
     if (typeof options === "function") {
         callback = options;
-        options = {}; 
+        options = {};
     }
-    var gitUrl = getGitUrl(gitpath, options); 
-    
+    var gitUrl = getGitUrl(gitpath, options);
+
     //if (gitUrl.indexOf('http') === 0) {
         //gitUrl = 'git+'+ gitUrl;
     //}
-    
+
     log.info("command : npm install -s "+ gitUrl);
     var cmd = 'npm install -s '+ gitUrl;
     var proc = childProcess.exec('npm i '+ gitUrl , function(err) {
@@ -89,4 +86,4 @@ module.exports = {
     replaceProjectName : replaceProjectName,
     npmGitInstall : npmGitInstall
 }
- 
+

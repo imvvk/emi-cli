@@ -21,20 +21,20 @@ module.exports = {
             fs.stat(project_path, function (err, result) {
                 if (err) {
                     fse.mkdirsSync(project_path);
-                    fse.copySync(template_path, project_path); 
+                    fse.copySync(template_path, project_path);
                     download.replaceProjectName(project_path, projectName);
                     log.info("copy template [" +template+ "] to project " +  projectName +  " end !");
                     npmInstall(project_path);
                 } else {
                     var files = fs.readdirSync(project_path);
                     if (!files.length) {
-                        fse.copySync(template_path, project_path); 
+                        fse.copySync(template_path, project_path);
                         log.info("copy template [" +template+ "] to project " +  projectName +  " end !");
                         npmInstall(project_path);
                     } else {
                         inquirer.prompt([{ type :"confirm", "name" : "user_input", message : "project path not empty,  continue ?"}]).then(function (answers) {
                             if (answers.user_input) {
-                                fse.copySync(template_path, project_path); 
+                                fse.copySync(template_path, project_path);
                                 download.replaceProjectName(project_path, projectName);
                                 log.info("copy template [" +template+ "] to project " +  projectName +  " end !");
                                 npmInstall(project_path);
@@ -46,12 +46,12 @@ module.exports = {
                         });
                     }
 
-                
+
                 }
             })
-        
+
         }
-    }, 
+    },
     initGit :{
         exec :  function (template, projectName) {
             var emirc_path = path.resolve(process.env.HOME || process.env.USERPROFILE, '.emi_cache');
@@ -98,10 +98,10 @@ module.exports = {
                     });
                 }
             });
-          
+
         }
 
-      
+
     },
     install : {
         exec : function (component, isComponent) {
@@ -113,12 +113,12 @@ module.exports = {
             }
             if (!~component.indexOf('/') && isComponent) {
                 component = 'miui_ad_fe_component/'+ component;
-            } 
+            }
 
             download.npmGitInstall(component, {checkout : checkout});
         }
     },
-    server : { 
+    server : {
         exec : function (port) {
             log.info ("__emi__ work in path", __emi__.cwd);
             process.env.NODE_ENV = 'development';
@@ -135,7 +135,7 @@ module.exports = {
             } else {
                 env = 'dev';
             }
-            pack(env); 
+            pack(env);
         }
     },
 
@@ -144,7 +144,7 @@ module.exports = {
            log.info ("__emi__ work in path", __emi__.cwd);
             __emi__.watching = true;
            watch();
-        } 
+        }
     },
     clean : {
         exec : function (type) {
@@ -166,7 +166,7 @@ module.exports = {
             envConfig.set(name, value);
             log.info("set .emirc name: " +  name +  " value: " + (value || ""));
 
-        } 
+        }
     }
 
 }
