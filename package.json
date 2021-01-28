@@ -68,7 +68,7 @@
     "request": "^2.87.0",
     "sass-loader": "^7.1.0",
     "serve-favicon": "^2.4.5",
-    "shelljs": "^0.7.8",
+    "shelljs": "^0.8.4",
     "style-loader": "^0.23.1",
     "stylus": "^0.54.5",
     "sync-request": "^4.1.0",
